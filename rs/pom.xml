@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>rs</artifactId>
+	<packaging>war</packaging>
+
+	<parent>
+		<groupId>it.uniroma2.netgroup</groupId>
+		<artifactId>abe4jwt</artifactId>
+		<version>0.1-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+		<!-- dependency> <groupId>com.fasterxml.jackson.core</groupId> <artifactId>jackson-annotations</artifactId> 
+			<version>2.11.1</version> </dependency -->
+		<dependency>
+			<groupId>javax.json.bind</groupId>
+			<artifactId>javax.json.bind-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>net.wasdev.wlp.maven.plugins</groupId>
+				<!-- groupId>io.openliberty.tools</groupId -->
+				<artifactId>liberty-maven-plugin</artifactId>	
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!-- execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/liberty/wlp/usr/shared/resources/</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution-->
+					<execution>
+						<id>copy-h2-dependency</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<artifactItems>
+						<artifactItem>
+							<groupId>com.h2database</groupId>
+							<artifactId>h2</artifactId>
+							<version>${h2.version}</version>
+							<type>jar</type>
+							<outputDirectory>
+								${project.build.directory}/liberty/wlp/usr/shared/resources/
+							</outputDirectory>
+						</artifactItem>
+					</artifactItems>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<properties>
+		<h2.version>1.4.199</h2.version>
+		<httpPort>9280</httpPort>
+		<httpsPort>8643</httpsPort>
+		<nimbus-jose-jwt.version>7.3</nimbus-jose-jwt.version>
+		<bcprov-jdk15on.version>1.62</bcprov-jdk15on.version>
+		<bcpkix-jdk15on.version>1.62</bcpkix-jdk15on.version>
+	</properties>
+
+</project>

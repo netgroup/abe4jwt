@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="${project.artifactId}">
+
+    <featureManager>
+        <feature>localConnector-1.0</feature>
+        <feature>cdi-2.0</feature>
+        <feature>jaxrs-2.1</feature>
+        <feature>jpa-2.2</feature>
+        <feature>appSecurity-3.0</feature>
+        <feature>jsp-2.3</feature>
+        <feature>mpConfig-1.3</feature>
+        <feature>transportSecurity-1.0</feature> <!-- enable SSL, see https://www.ibm.com/support/knowledgecenter/SSEQTP_liberty/com.ibm.websphere.wlp.doc/ae/twlp_sec_ssl.html -->
+    </featureManager>
+    
+<!--IMPORTANT NOTE on sslDefault: do not change ssl id="defaultSSLConfig", should be *exactly* spelt as it is!!! 
+	DO NOT change the name. 
+	DO NOT create alternative config unless you're sure what you're doing (this is because the "defaultSSLConfig" inherit particular behaviours
+	your default config may not have!)	
+	Attribute trustDefaultCerts="true" is needed to access external API (e.g., SendGrid API) -->	
+
+	<keyStore id="defaultKeyStore" password="initial" location="${project.basedir}/../key.p12"/>
+  	<ssl id="defaultSSLConfig" keyStoreRef="defaultKeyStore" trustStoreRef="defaultKeyStore" trustDefaultCerts="true"/>
+	
+    <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="${httpPort}" httpsPort="${httpsPort}"/>
+    
+    <!-- applicationManager autoExpand="true"/-->
+    <!--  applicationMonitor updateTrigger="mbean"/-->
+    <!-- applicationMonitor updateTrigger="polled" pollingRate="2s"/-->
+    <!-- application type="war" location="${project.build.directory}/${project.build.finalName}.war" context-root="/"/-->
+
+</server>

@@ -1,0 +1,10 @@
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" version="3.0">
+	<servlet>
+		<servlet-name>downstream</servlet-name>
+		<servlet-class>it.uniroma2.netgroup.abe4jwt.showcase.client.DownstreamCallServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>downstream</servlet-name>
+		<url-pattern>/downstream/*</url-pattern>
+	</servlet-mapping>
+</web-app>

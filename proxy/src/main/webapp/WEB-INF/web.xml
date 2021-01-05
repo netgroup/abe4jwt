@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.1" xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_3_1.xsd">
+	<servlet>
+		<servlet-name>proxy</servlet-name>
+		<servlet-class>it.uniroma2.netgroup.abe4jwt.abeproxy.AbeProxy</servlet-class>
+		<init-param>
+			<param-name>authority</param-name>
+			<param-value>https://localhost:9443/as</param-value>
+		</init-param>		
+		<!-- init-param>
+			<param-name>myself</param-name>
+			<param-value>http://localhost:9999</param-value>
+		</init-param--> <!-- no more used -->
+		<init-param>
+			<param-name>proxyTo</param-name>
+			<param-value>http://localhost:9280/rs</param-value>
+		</init-param>
+		<init-param>
+			<param-name>prefix</param-name>
+			<param-value>/</param-value>
+		</init-param>
+		<init-param>
+			<param-name>protected</param-name>
+			<param-value>/blog/protected/</param-value>
+		</init-param>		
+		<load-on-startup>1</load-on-startup>
+		<async-supported>true</async-supported>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>proxy</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+</web-app>

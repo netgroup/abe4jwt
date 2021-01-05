@@ -1,0 +1,71 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>it.uniroma2.netgroup</groupId>
+	<artifactId>new-abe-proxy</artifactId>
+	<packaging>war</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-proxy</artifactId>
+			<version>9.4.29.v20200521</version>
+			<!-- version>9.4.33.v20201020</version-->
+		</dependency>
+		<dependency>
+			<groupId>com.nimbusds</groupId>
+			<artifactId>nimbus-jose-jwt</artifactId>
+			<version>7.3</version>
+		</dependency>
+		<dependency>
+			<groupId>it.uniroma2.netgroup.abeproxy</groupId>
+			<artifactId>abewrapper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>new-abe-proxy</finalName>
+		<plugins>
+			<!-- plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>properties-maven-plugin</artifactId> 
+				<version>1.0.0</version> <executions> <execution> <goals> <goal>set-system-properties</goal> 
+				</goals> <configuration> <properties> <property> <name>org.eclipse.jetty.util.log.class</name> 
+				<value>org.eclipse.jetty.util.log.StdErrLog</value> </property> <property> 
+				<name>org.eclipse.jetty.LEVEL</name> <value>WARN</value> </property> </properties> 
+				</configuration> </execution> </executions> </plugin -->
+
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>9.4.29.v20200521</version>
+				<configuration> <!-- see https://stackoverflow.com/questions/3794892/howto-use-https-ssl-with-maven-mortbay-jetty-plugin 
+						for explanation -->
+					<jettyXml>src/main/resources/jetty.xml,src/main/resources/jetty-ssl.xml,src/main/resources/jetty-ssl-context.xml,src/main/resources/jetty-https.xml</jettyXml>
+					<!-- jettyXml>src/main/resources/jetty.xml,src/main/resources/jetty-ssl-context.xml</jettyXml-->
+					<!-- httpConnector> <host>localhost</host> <port>9999</port> </httpConnector -->
+					<scanIntervalSeconds>0</scanIntervalSeconds>
+					<reload>manual</reload>
+					<stopPort>9966</stopPort>
+					<stopKey>foo</stopKey>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+	<!-- please see WEB-INF/web.xml for additional config parameters definition -->
+</project>
