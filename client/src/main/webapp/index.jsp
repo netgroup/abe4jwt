@@ -89,11 +89,10 @@
 		    <p class="animated fadeIn wow" data-wow-delay="0.97s">
 			    With the raising of <a href="https://openid.net/connect/">OpenID Connect 1.0</a> and <a href="">JSON Web Token (JWT)</a> as a de facto standard 
 			    for token-based authentication, in the last few years the number of identity-centric ecosystems have exponentially increased (together,
-			    unfortunately, with the number of potential threats to deployed implementation). Today, JSON Web Tokens (JWT) is so extensively used to 
+			    unfortunately, with the number of potential threats to deployed implementations). Today, JSON Web Tokens (JWT) is so extensively used to 
 		    	constitute the second mostly used approach for identifying clients at server side, just after traditional session based authentication!
-			    <br>We've slightly altered an OpenID Connect 1.0 web flow to introduce an Attribute Based Encryption mechanism that decouples the Authorization Server function 
-			    from legacy Resource Servers through cryptographic verification of an ABE policy and a challenge-based interaction with the Client. In practice, 
-			    the resulting distributed authorization-centric mechanism works across different domains and across different identity providers.</p>
+			    <br>We've slightly altered an OpenID Connect 1.0 web flow to introduce an Attribute Based Encryption (ABE) mechanism that decouples the Authorization Server function 
+			    from legacy Resource Servers through cryptographic verification of an ABE policy and a challenge/response interaction with the Client. 				    The resulting distributed authorization-centric mechanism works across different domains and across different identity providers.</p>
 		    		
 		</div>
 
@@ -111,7 +110,7 @@
 				<div class="col-sm-6 in-order-1 sm-6-content wow animated fadeInLeft" data-wow-delay="0.22s">
 					<h1>Why does Attribute-Based Encryption concern?</h1>
 					<p>
-				        Despite its complex math formulation, the concept of ABE is very simple: decryption only happens if receiver's key embeds 
+				        Despite its complex math formulation, the concept of ABE is very simple: decryption only happens if the receiver's key embeds 
 				        a policy 'matching' particular attributes the sender has used to encrypt the plaintext. A Resource Server may thus challenge a Client by encrypting a secret and 
 				        ask the Client to present it when invoking functions. Only Clients that legitimately got the correct key-policy can decrypt the secret, thus invoke the function. 
 				        The key may embed different attributes (identity information, actions to perform, expiration, etc.) combined together in a policy.
