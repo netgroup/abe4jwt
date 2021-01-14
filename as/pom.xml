@@ -21,16 +21,6 @@
 			<artifactId>nimbus-jose-jwt</artifactId>
 			<version>${nimbus-jose-jwt.version}</version>
 		</dependency>
-		<!-- dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>${bcprov-jdk15on.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>${bcpkix-jdk15on.version}</version>
-		</dependency-->
 		<dependency>
 			<groupId>commons-validator</groupId>
 			<artifactId>commons-validator</artifactId>
@@ -41,6 +31,11 @@
 			<artifactId>jstl</artifactId>
 			<version>1.2</version>
 		</dependency>
+		<dependency>
+		    <groupId>com.google.code.maven-play-plugin.org.playframework</groupId>
+		    <artifactId>jj-simplecaptcha</artifactId>
+		    <version>1.1</version>
+		</dependency>	
 		<dependency>
 			<groupId>it.uniroma2.netgroup.abeproxy</groupId>
 			<artifactId>abewrapper</artifactId>

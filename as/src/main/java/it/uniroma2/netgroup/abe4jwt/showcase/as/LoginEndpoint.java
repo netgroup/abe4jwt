@@ -2,7 +2,6 @@ package it.uniroma2.netgroup.abe4jwt.showcase.as;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
-import java.util.UUID;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -46,7 +45,10 @@ public class LoginEndpoint {
 			@Context HttpServletResponse response,
 			@Context UriInfo uriInfo) throws ServletException, IOException {
 		MultivaluedMap<String, String> originalParams = (MultivaluedMap<String, String>) request.getSession().getAttribute("ORIGINAL_PARAMS");
-		if (originalParams==null) request.getRequestDispatcher("/authorize").forward(request, response); //error!
+		if (originalParams==null) {
+			request.getRequestDispatcher("/authorize").forward(request, response); //error!
+			return null;
+		}
 		String nonce=random.nextString();
 		System.out.println("[LoginEndpoint] No user session found. Go to login page, generating nonce... "+nonce);
 		originalParams.putSingle("nonce",nonce);
@@ -56,7 +58,7 @@ public class LoginEndpoint {
 		request.getRequestDispatcher("/login.jsp").forward(request, response);
 		return null;
 	}
-
+			
 	//Get user's email address from the webform and send an email to her in order to check identity
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -69,6 +71,11 @@ public class LoginEndpoint {
 			request.getRequestDispatcher("/authenticate").forward(request, response);
 			return null;
 		} 
+		if (originalParams.getFirst("captcha")!=null&&!originalParams.getFirst("captcha").equals(params.getFirst("captcha"))) {
+			request.setAttribute("loginMessage", "Invalid captcha, please retry.");
+			request.getRequestDispatcher("/login.jsp").forward(request, response);
+			return null;			
+		};
 		String to = params.getFirst("user");
 		if (!validate(to)) {
 			request.setAttribute("loginMessage", "Please provide a valid email address.");
