@@ -71,19 +71,21 @@ public class CallbackServlet extends AbstractServlet {
 //		String clientId=config.getValue("client.clientId", String.class);
 		String clientKey=(String) getServletContext().getAttribute(AbstractServlet.CLIENT_KEY); //clientKey is set in AuthorizationCodeServlet.init()
 		try {
-			System.out.println("decrypting JWT using clientKey:"+clientKey);
+			System.out.println("Decrypting JWT using clientKey:"+clientKey);
 			EncryptedJWT jwt = EncryptedJWT.parse(code);
 //			System.out.println("Decrypting JWT:"+jwt.getParsedString());
 			jwt.decrypt(new KPABEDecrypter(new Base64URL(clientKey)));
 			try {
 				Payload p=jwt.getPayload();
-				System.out.println("JWT Decrypted");
-//				System.out.println("JWT Decrypted payload is:"+p.toString());
 				request.getSession().setAttribute(JWT,p);
 				JSONObject o=p.toJSONObject();
 				request.getSession().setAttribute(EPHKEY, o.getAsString(EPHKEY));
-				request.getSession().setAttribute(SUB, o.getAsString(SUB));
+				final String userId=o.getAsString(SUB);
+				final String scope=o.getAsString(SCOPE);
+				request.getSession().setAttribute(SUB, userId);
 				request.getSession().setAttribute(SCOPE, o.getAsString(SCOPE));
+				System.out.println("LOGIN completed for user "+userId+" allowed scope: "+scope);
+//				System.out.println("JWT decrypted payload is:"+p.toString());				
 			} catch (NullPointerException e) {
 				System.out.println("--- --- --- ALERT DECRYPTION FAILED! --- --- ---");
 				request.getSession().setAttribute(JWT,"JWT cannot be decrypted");

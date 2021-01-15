@@ -10,7 +10,7 @@ This source code has been adapted from the work by [Baeldung](https://www.baeldu
 
 ##Install OpenABE first!##
 
-[OpenABE](https://github.com/zeutro/openabe) is probably the most advanced and performant ABE framework at the time of writing available and it is written in C++. Our code relies on it, so the OpenABE framwork need to be **installed** on the machine running the AS, the Proxy and the Client (the RS does not need any crypto). 
+[OpenABE](https://github.com/zeutro/openabe) is probably the most advanced and performant ABE framework at the time of writing available and it is written in C++. Our code relies on it, so the OpenABE framework needs to be **installed** on the machine running the AS, the Proxy and the Client (the RS does not need any crypto). 
 The following procedure should work on any Linux compatible machine.
 
 ```sh
@@ -82,7 +82,7 @@ export IGNORE_HOSTNAME_VERIFIER=true
 mvn liberty:stop clean package liberty:run-server
 ```
 
-Check the Client has started by visiting the following URL:
+Check whether the Client has started by visiting the following URL:
 
 ```sh
 https://localhost:9543/client/index.jsp
@@ -111,7 +111,7 @@ export IGNORE_HOSTNAME_VERIFIER=true
 Other than pom.xml in the topmost folder and in each subfolder (AS, Client, Proxy, RS), each component has its own default properties that may be configured. This is usually ***not needed*** if you run all servers on the same host (using the localhost interface). However, you may need to be aware of these specific settings to extend the framework or make some other hacks.
 
 **AS**
-The AS uses Sendgrid.com API to mail users. After obtaining your own key from Sendgrid, configure Sendgrid properties from resource file: 
+The AS may use [Sendgrid.com](https://sendgrid.com/) API to mail users. After obtaining your own key from Sendgrid, configure Sendgrid properties from resource file: 
 ```sh
 resources/META-INF/microprofile-config.properties.
 ```
@@ -137,9 +137,9 @@ Default assigned HTTPS port for the Proxy is 8443 (see jetty.xml).
 Configure resources/META-INF/microprofile-config.properties to provide the url assigned to the AS and to the RS.
 Default assigned HTTPS port for the Client is 9543 (see pom.xml).
 
-##If you each server on a different machine (or Docker container)...##
+##If you each server on different machines (or Docker containers)...##
 
-The is no need to alter default configuration files above, this can be done easily, by defining two environment variables. If defined, these variables will override the related settings in resources/META-INF/microprofile-config.properties (for the Client) and in /webapp/WEB-INF/web.xml (for the Proxy).
+There is no need to alter default configuration files above, this can be done easily, by defining two environment variables. If defined, these variables will override the related settings in resources/META-INF/microprofile-config.properties (for the Client) and in /webapp/WEB-INF/web.xml (for the Proxy).
 
 You just need to inform:
 
@@ -155,15 +155,21 @@ export AS_URI=<HTTP URL where your AS is running>
 export PROXY_URI=<HTTP URL where your Proxy is running>
 ```
 
-
-
 For example, to run in a Docker environment use:
 
 ```sh
+export IGNORE_HOSTNAME_VERIFIER=true
 export AS_URI=<https url to the AS>
 export PROXY_URI=<https url to the Proxy>
-docker run -dp 9543:9543 -e AS_URI -e PROXY_URI client
-docker run -dp 8443:8443 -e AS_URI -e proxy
+docker run -dp 9443:9443 -e IGNORE_HOSTNAME_VERIFIER as
+docker run -dp 8443:8443 -e IGNORE_HOSTNAME_VERIFIER -e AS_URI -e proxy
+docker run -dp 9543:9543 -e IGNORE_HOSTNAME_VERIFIER -e AS_URI -e PROXY_URI client
+```
+
+And check whether the Client has started by visiting the following URL:
+
+```sh
+https://<IP where your Client is running>:9543/client/index.jsp
 ```
 
 Have fun!

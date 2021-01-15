@@ -52,7 +52,7 @@ public class DownstreamCallServlet extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse outResponse) throws ServletException, IOException {
 		System.out.println(request.getMethod()+" "+request.getPathInfo());
-		final String userId=(String) request.getSession().getAttribute("user");
+		final String userId=(String) request.getSession().getAttribute(AbstractServlet.SUB);
 //		final String clientId=config.getValue("client.clientId", String.class);
 		final String clientId=AuthorizationCodeServlet._clientId;
 		if (clientId==null) {
@@ -83,16 +83,16 @@ public class DownstreamCallServlet extends HttpServlet {
 				//try and update the challenge 
 				String authenticate=response.getHeaderString("WWW-Authenticate");//
 				if (authenticate!=null) {
+					System.out.println("DECRYPTING WWW-Authenticate header for "+key);
 					String[] realm=authenticate.replaceAll("(Basic\\s+realm\\s*=\\s*\\\")([^\\\"]+)(\\\")", "$2").split("@");
 					secret=realm[0]; //TODO: calculate secret!!!				
-					String clientKey=(String) getServletContext().getAttribute("clientKey"); //clientKey is set in AuthorizationCodeServlet.init()
-					String ephkey=(String) request.getSession().getAttribute("ephkey");
-					try {
+					String clientKey=(String) getServletContext().getAttribute(AbstractServlet.CLIENT_KEY); //clientKey is set in AuthorizationCodeServlet.init()
+					String ephkey=(String) request.getSession().getAttribute(AbstractServlet.EPHKEY);
+					if (ephkey!=null) try {
 						String[] parts=realm[0].split("_");
 						abeProvider=AbeCryptoFactory.get();
 						long startDecryption=System.currentTimeMillis();
 						String plainText=new String(abeProvider.decrypt(new Base64URL(clientKey), new Base64URL(parts[0]), new Base64URL(parts[1])));
-//						System.out.println("DECRYPTION PASS 1 OK, intermediate plainText is:"+plainText);
 						System.out.println("DECRYPTION PASS 1 OK. Proof of Possession achieved");
 						String[] parts2=plainText.split("_");
 						secret=new String(abeProvider.decrypt(
@@ -100,8 +100,6 @@ public class DownstreamCallServlet extends HttpServlet {
 								new Base64URL(parts2[0]), 
 								new Base64URL(parts2[1])));
 						long endDecryption=System.currentTimeMillis();
-//						System.out.println("[PERFORMANCE-decryption] "+(endDecryption-startDecryption));
-//						System.out.println("DECRYPTION PASS 2 OK");
 						System.out.println("DECRYPTION PASS 2 OK. Secret is:"+secret);
 						request.getSession().setAttribute(key, secret);
 						response = elicitate(userId, clientId, resourceId, secret, data, contentType);
@@ -110,6 +108,8 @@ public class DownstreamCallServlet extends HttpServlet {
 								+ "\n Check ephKey generation on the Client and AS <--"
 								+ "\n\n");
 						e.printStackTrace();
+					} else {
+						System.out.println("\n\n--> No ephkey found in session, did you provide login & consent?\n\n");
 					}
 				}
 			}
@@ -156,7 +156,7 @@ public class DownstreamCallServlet extends HttpServlet {
 	}
 
 	private String getKey(String userId, String resourceId) {
-		return "user:"+userId+"&resource:"+resourceId+".secret";
+		return "user="+userId+"&resource="+resourceId+".secret";
 	}
 	
 	private String getAudienceUri() {

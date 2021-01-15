@@ -16,7 +16,7 @@ public abstract class AbstractServlet extends HttpServlet {
 	public static final String SCOPE = "scope";
 	public static final String SUB = "sub";
 	public static final String JWT = "jwt";
-
+	
 	protected void dispatch(String location, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RequestDispatcher requestDispatcher = request.getRequestDispatcher(location);
         requestDispatcher.forward(request, response);

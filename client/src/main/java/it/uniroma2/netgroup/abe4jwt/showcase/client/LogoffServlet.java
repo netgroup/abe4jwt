@@ -13,6 +13,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import java.io.IOException;
@@ -23,10 +24,13 @@ public class LogoffServlet extends AbstractServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.getSession().removeAttribute(EPHKEY);
-		request.getSession().removeAttribute(SUB);
-		request.getSession().removeAttribute(SCOPE);
-		request.getSession().removeAttribute(JWT);
+		final String userId=(String) request.getSession().getAttribute(AbstractServlet.SUB);
+		if (userId!=null) System.out.println("LOGOFF user "+userId+" has left \n\n\n");
+		request.getSession().invalidate();
+//		request.getSession().removeAttribute(EPHKEY);
+//		request.getSession().removeAttribute(SUB);
+//		request.getSession().removeAttribute(SCOPE);
+//		request.getSession().removeAttribute(JWT);
 		dispatch("/index.jsp", request, response);
 	}
 }

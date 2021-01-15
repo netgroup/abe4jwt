@@ -156,14 +156,13 @@ public class AuthorizationCodeServlet extends HttpServlet {
 
 		String state = UUID.randomUUID().toString();
 		request.getSession().setAttribute(AbstractServlet.CLIENT_LOCAL_STATE, state);
-//		System.out.println("Trying authorization call, calling session ID is: "+request.getSession().getId());
-
 		String authorizationLocation = getASUri() + "/authorize?response_type=code"
 				+ "&client=" + _clientId
 				+ "&redirect_uri=" + _redirectUri
 				+ "&audience_uri=" + getAudienceUri()
 				+ "&scope=" + getScope()
 				+ "&state=" + state;
+		System.out.println("\n\nLOGIN started, redirecting user to "+authorizationLocation);
 		response.sendRedirect(authorizationLocation);
 	}
 
