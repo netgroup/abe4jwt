@@ -219,8 +219,7 @@ public class AbeProxy extends ProxyServlet {
 		if (_audience==null) {
 			_audience=request.getRequestURL().toString();
 			String extra=request.getPathInfo();
-			if (extra==null) extra="";
-			_audience=_audience.substring(0,_audience.indexOf(extra));
+			if (extra!=null) _audience=_audience.substring(0,_audience.indexOf(extra)); //TODO: fix this!
 			super._log.info("This is the first incoming request to the Proxy, performing " +
 					"initialization by discovering self identifier...\n"+
 					"-original request URL:"+request.getRequestURL()+"\n"+
