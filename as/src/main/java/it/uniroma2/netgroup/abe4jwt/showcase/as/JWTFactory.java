@@ -18,6 +18,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 
 import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
 import it.uniroma2.netgroup.abe4jwt.jose.KPABEEncrypter;
+import it.uniroma2.netgroup.abe4jwt.util.StringReplacer;
 
 //@Model 
 //either use @Model or Change the bean discovery mode in your bean archive from the default "annotated" to "all" by adding a beans.xml file in WEB-INF.
@@ -90,10 +91,11 @@ public class JWTFactory {
     }
     
     private Base64URL ephkey(String issuer, String client, String user, String audience, String approvedScope, Date expirationTime) {
-		Base64URL ephkey;
+		if (approvedScope==null) return null;
+    	Base64URL ephkey;
 		String[] scopes=approvedScope.split(" ");
-		StringBuilder sb=new StringBuilder("(scope:"+scopes[0]);
-		for (int i=1;i<scopes.length;i++) sb.append(" or scope:"+scopes[i]);
+		StringBuilder sb=new StringBuilder("(scope:"+StringReplacer.replace(scopes[0])); //normalizing scope, look at AbeProxy.generateRealm()
+		for (int i=1;i<scopes.length;i++) sb.append(" or scope:"+StringReplacer.replace(scopes[i]));  //normalizing scope, look at AbeProxy.generateRealm()
 		
 		try {
 			String keyString = "issuer:"+issuer+
@@ -109,7 +111,7 @@ public class JWTFactory {
 //			System.out.println("Ephemeral key:"+ephkey.toString());
 		} catch (Exception e) {
 			System.out.println("Ephemeral key generation failure.");
-			ephkey=Base64URL.encode("F A K E - K E Y");
+			return null;
 		}
 		return ephkey;
     }

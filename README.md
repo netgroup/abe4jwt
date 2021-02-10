@@ -8,7 +8,7 @@ This source code has been adapted from the work by [Baeldung](https://www.baeldu
 
 **NOTE:** The code is intended for educational purpose only (production code may need additional security features).
 
-##Install OpenABE first!##
+## Install OpenABE first! ##
 
 [OpenABE](https://github.com/zeutro/openabe) is probably the most advanced and performant ABE framework at the time of writing available and it is written in C++. Our code relies on it, so the OpenABE framework needs to be **installed** on the machine running the AS, the Proxy and the Client (the RS does not need any crypto). 
 The following procedure should work on any Linux compatible machine.
@@ -19,7 +19,7 @@ apt-get -y update && apt-get -y --no-install-recommends install sudo && git clon
 
 Note that 'sudo' should be available on the machine as it is invoked from an OpenABE library installation script. Note also that variable LD_LIBRARY_PATH is first overridden by the script and then unset for installing the mail library.
     
-##Using Maven on localhost (as command line or in Eclipse)##
+## Using Maven on localhost (as command line or in Eclipse) ##
 
 First, source environment for OpenABE:
 ```sh
@@ -27,7 +27,7 @@ cd openabe
 . ./env
 ```
 
-Download and compile everything using Git and Maven:
+Download and compile each component using Git and Maven:
 ```sh
 	git clone https://github.com/netgroup/abe4jwt.git && \
 	cd abe4jwt/jwt && mvn clean install && \ 
@@ -36,8 +36,6 @@ Download and compile everything using Git and Maven:
 	cd ../client && mvn clean package && \
 	cd ../proxy && mvn clean package
 ```
-
-**NOTE:** If you run under Eclipse, import each single folder as a mvn project (otherwise it will not work: Eclipse will set up a single top folder for all projects and this will create conflicts when running Maven).
 
 Copy file key.p12 in the AS project folder, and run the AS:
 
@@ -88,26 +86,28 @@ Check whether the Client has started by visiting the following URL:
 https://localhost:9543/client/index.jsp
 ```
 
-##SSL Keys##
+**NOTE for Eclipse users:** If you run under Eclipse, after importing the whole project from GitHub, import each component as a single mvn project: right click on each component folder > Import > Existing MVN project.
+
+## SSL Keys ##
 AS, Client and Proxy use the same self-signed key and the corresponding certificate, which is stored in the same keystore named "key.p12" and protected by the password "initial". The keystore key.p12 is used, by default, as a truststore too, so any server trusts each other. RS does not need SSL, as it is is assumed to be in a safe network zone and only accessed through the reverse Proxy. 
 
 **NOTE**: Before starting each server, you should just copy file key.p12 into topmost folder of each projext (AS, Client and Proxy). The respective configuration files (Liberty configuration file server.xml for AS and Client, and jetty-ssl-context.xml for the Proxy) expect to find it there.
 
-##Alternative truststore settings##
+##Alternative truststore settings ##
 Alternative truststore settings consists in exporting the server certificate from key.p12 and importing it in java default truststore as follows (assumed the default truststore is /opt/java/openjdk/lib/security/cacerts and has password 'changeit'):
 
 ```sh
 	keytool -exportcert -v -keystore abe4jwt-pri/key.p12 -storepass initial -alias default -file fake-pwd.crt && \
 	keytool -importcert -v -trustcacerts -keystore /opt/java/openjdk/lib/security/cacerts -storepass changeit -alias fake-play-with-docker -file fake-pwd.crt -noprompt
 ```
-##Ignore Hostname verification!##
+## Ignore Hostname verification! ##
 **IMPORTANT:** If you don't know the exact IP address where your servers will run, or you don't provide it in your server certificate, you must skip hostname verification, setting the following environment variable for each of the three servers using HTTPS (AS, Client, Proxy).
 
 ```sh
 export IGNORE_HOSTNAME_VERIFIER=true
 ```
 
-##Default configuration file##
+## Default configuration file ##
 Other than pom.xml in the topmost folder and in each subfolder (AS, Client, Proxy, RS), each component has its own default properties that may be configured. This is usually ***not needed*** if you run all servers on the same host (using the localhost interface). However, you may need to be aware of these specific settings to extend the framework or make some other hacks.
 
 **AS**
@@ -137,7 +137,7 @@ Default assigned HTTPS port for the Proxy is 8443 (see jetty.xml).
 Configure resources/META-INF/microprofile-config.properties to provide the url assigned to the AS and to the RS.
 Default assigned HTTPS port for the Client is 9543 (see pom.xml).
 
-##If you each server on different machines (or Docker containers)...##
+## If you each server on different machines (or Docker containers)... ##
 
 There is no need to alter default configuration files above, this can be done easily, by defining two environment variables. If defined, these variables will override the related settings in resources/META-INF/microprofile-config.properties (for the Client) and in /webapp/WEB-INF/web.xml (for the Proxy).
 

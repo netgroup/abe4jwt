@@ -17,9 +17,7 @@ public class LogoffEndpoint {
 	public Response doPost(@Context HttpServletRequest request,
 			@Context HttpServletResponse response) throws Exception {
 		MultivaluedMap<String, String> originalParams = (MultivaluedMap<String, String>) request.getSession().getAttribute("ORIGINAL_PARAMS");
-		if (originalParams!=null) System.out.println("[LogoffEndpoint] user "+originalParams.getFirst("logged_user")+" has left");
-		request.getSession().invalidate();
-		request.setAttribute("approval_status", "NO");
+		if (originalParams!=null) System.out.println("[LogoffEndpoint] invalidating session for originalParams: "+originalParams);
 		request.getRequestDispatcher("/authorize").forward(request, response);
 		return null;
 	}

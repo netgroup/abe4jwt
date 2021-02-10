@@ -3,11 +3,9 @@ package it.uniroma2.netgroup.abe4jwt.showcase.as;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,15 +14,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-
-import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
 
 @RequestScoped
 @Path("authorize")
@@ -99,7 +94,10 @@ public class AuthorizationEndpoint {
 			@Context UriInfo uriInfo,
 			MultivaluedMap<String, String> params) throws Exception {
 		MultivaluedMap<String, String> originalParams = (MultivaluedMap<String, String>) request.getSession().getAttribute("ORIGINAL_PARAMS");
-		System.out.println("authorization submitted from user, originalParams: "+originalParams);
+		String clientId = originalParams.getFirst("client");
+		String audience = originalParams.getFirst("audience_uri");
+		String userId = originalParams.getFirst("logged_user");
+		String redirectUri = originalParams.getFirst("redirect_uri");	
 		if (originalParams.getFirst("state").hashCode()!=Integer.parseInt(request.getParameter("reqId"))) {//by this check we're sure that the request is not from a stale page authorize.jsp page
 			System.out.println("requestId not matching, perhaps a stale request? "+request.getParameter("reqId")+" instead of "+originalParams.getFirst("state").hashCode());
 			return Response.status(Response.Status.FORBIDDEN).build();
@@ -108,48 +106,42 @@ public class AuthorizationEndpoint {
 			System.out.println("no originalParams found");
 			return Response.status(Response.Status.FORBIDDEN).build();
 		}
-		String clientId = originalParams.getFirst("client");
-		String audience = originalParams.getFirst("audience_uri");
-		String userId = originalParams.getFirst("logged_user");
-		String redirectUri = originalParams.getFirst("redirect_uri");
-		StringBuilder returnUri = new StringBuilder(redirectUri);
 		String approvalStatus = params.getFirst("approval_status");
-		if ("NO".equals(approvalStatus)) {
-			URI location = UriBuilder.fromUri(returnUri.toString())
-					.queryParam("error", "User doesn't approved the request.")
-					.queryParam("error_description", "User doesn't approved the request.")
-					.build();
-			return Response.seeOther(location).build();
-		}
-		//==> YES
 		List<String> approvedScopes = params.get("scope");
-		if (approvedScopes == null || approvedScopes.isEmpty()) {
-			URI location = UriBuilder.fromUri(returnUri.toString())
-					.queryParam("error", "User doesn't approved the request.")
-					.queryParam("error_description", "User doesn't approved the request.")
-					.build();
-			return Response.seeOther(location).build();
-		}
-		final String compared=originalParams.getFirst("scope")+" "; //check whether all scopes from the request are allowed!!
 		StringBuffer scopeBuf =new StringBuffer();
-		for (String s:approvedScopes) {
-			if (compared.indexOf(s+" ")<0) {
-				URI location = UriBuilder.fromUri(returnUri.toString())
-						.queryParam("error", "Wrong scope approved")
-						.queryParam("error_description", "'scope' ["+s+"] was approved by the user, but it was not in the original request")
-						.build();
-				return Response.seeOther(location).build();				
-			}
-			scopeBuf.append(s+" ");
-		} 
-
+		StringBuilder returnUri = new StringBuilder(redirectUri);
 		String issuer=uriInfo.getBaseUri().toString();
 		if (issuer.endsWith("/")) issuer=issuer.substring(0,issuer.length()-1);
-		String token=factory.create(issuer, 
-				clientId, 
-				userId, 
-				audience, 
-				scopeBuf.toString().trim());
+		String token=null;
+		if (!"YES".equals(approvalStatus)) {
+			System.out.println("user "+userId+" has left");
+			userId=null;
+			token=factory.create(issuer, 
+					clientId, 
+					null, 
+					audience, 
+					null);
+			request.getSession().invalidate();
+		} else if (approvedScopes!=null && !approvedScopes.isEmpty()) {
+			System.out.println("authorization submitted by user, originalParams: "+originalParams);
+			//==> YES
+			final String compared=originalParams.getFirst("scope")+" "; //check whether all scopes from the request are allowed!!
+			for (String s:approvedScopes) {
+				if (compared.indexOf(s+" ")<0) {
+					URI location = UriBuilder.fromUri(returnUri.toString())
+							.queryParam("error", "Wrong scope approved")
+							.queryParam("error_description", "'scope' ["+s+"] was approved by the user, but it was not in the original request")
+							.build();
+					return Response.seeOther(location).build();				
+				}
+				scopeBuf.append(s+" ");
+			} 
+			token=factory.create(issuer, 
+					clientId, 
+					userId, 
+					audience, 
+					scopeBuf.toString().trim());
+		}
 		System.out.println("Token generated! "/*+token*/); 
 		returnUri.append("?code=").append(token);
 		String state = originalParams.getFirst("state");

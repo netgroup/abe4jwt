@@ -122,7 +122,7 @@ public class AuthorizationCodeServlet extends HttpServlet {
 		}
 		resourceWebTarget = theGoodClient.target(targetUri)
 				.path("sk")
-				.queryParam("url", _redirectUri)
+				.queryParam("redirect_uri", _redirectUri)
 				.queryParam("state", state);
 		r=resourceWebTarget.request().get();
 		int code=r.getStatus();

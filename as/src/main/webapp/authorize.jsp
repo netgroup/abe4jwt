@@ -5,7 +5,9 @@
 <body>
 
 <div class="container">
-    <p><h3>${sessionScope.ORIGINAL_PARAMS.user} do you want to Authorize scopes for client : ${sessionScope.ORIGINAL_PARAMS.client}?</h3></p>
+    <p><h3>${sessionScope.ORIGINAL_PARAMS.user} what scope(s) from
+    resource server ${sessionScope.ORIGINAL_PARAMS.audience_uri} do you authorize 
+    for client ${sessionScope.ORIGINAL_PARAMS.client}?</h3></p>
     <hr>
 
     <form method="post" action="authorize">
@@ -22,17 +24,11 @@
             <tr>
                 <td colspan="2">
                     <input type="submit" name="approval_status" value="YES"/>
-                    <input type="submit" name="approval_status" value="NO"/>
+                    <input type="submit" name="approval_status" value="I'm not ${sessionScope.ORIGINAL_PARAMS.user}, please log me off."/>
                     <input type="hidden" name="reqId" value="${requestScope.reqId}"/>
                 </td>
             </tr>
         </table>
-    </form>
-</div>
-<div class="container">
-    <form method="post" action="authorize">
-        <input type="submit" name="approval_status" value="I'm not ${sessionScope.ORIGINAL_PARAMS.user}, please log me off."/>
-        <input type="hidden" name="reqId" value="${requestScope.reqId}"/>
     </form>
 </div>
 </body>

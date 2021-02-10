@@ -28,6 +28,7 @@ import org.apache.commons.validator.EmailValidator;
 import org.eclipse.microprofile.config.Config;
 
 import it.uniroma2.netgroup.abe4jwt.util.RandomString;
+import it.uniroma2.netgroup.abe4jwt.util.StringReplacer;
 
 //import com.baeldung.oauth2.authorization.server.model.AppDataRepository;
 
@@ -53,7 +54,8 @@ public class LoginEndpoint {
 		System.out.println("[LoginEndpoint] No user session found. Go to login page, generating nonce... "+nonce);
 		originalParams.putSingle("nonce",nonce);
 		originalParams.putSingle("uri", uriInfo.getAbsolutePathBuilder().queryParam("nonce", nonce).build().toASCIIString().replace("/login", "/check"));
-		request.setAttribute("loginMessage", "Please insert your email address. You'll receive an email message containing a link. "
+		request.setAttribute("loginMessage", "You'll receive an email containing<br/>"
+				+ "a link to your address.<br/>"
 				+ "To authenticate, click on the link.");
 		request.getRequestDispatcher("/login.jsp").forward(request, response);
 		return null;
@@ -82,12 +84,12 @@ public class LoginEndpoint {
 			request.getRequestDispatcher("/login.jsp").forward(request, response);
 			return null;
 		} 
-		originalParams.putSingle("user",to);
+		originalParams.putSingle("user",StringReplacer.replace(to));
 		//config properties are taken from /src/main/resources/META-INF/microprofile-config.properties
 		final String link="<br><a href='"+originalParams.getFirst("uri")+"'>"+originalParams.getFirst("uri")+"</a>";
 		final String _ERROR="No API key, no email sent. In production mode, "+
 				"please Configure /src/main/resources/META-INF/microprofile-config.properties, "+
-				"also consider adding some anti-DoS feature such as <a href='https://www.google.com/recaptcha/about/'>recaptcha</a>"+
+				"also consider adding a better anti-DoS feature like <a href='https://www.google.com/recaptcha/about/'>recaptcha</a>"+
 				"<h3>REMOVE FROM THIS LINE BELOW IN PRODUCTION CODE</h3><br/>";
 		final String apiKey, host, path, from,subject, message;
 		try {
@@ -98,7 +100,7 @@ public class LoginEndpoint {
 			subject = config.getValue("mail.subject",String.class);
 			message = config.getValue("mail.message",String.class);
 			//TODO: quirky json encoded string... provide a replacement for this!
-			String json= "{\"personalizations\":[{\"to\":[{\"email\":\""+to+"\"}],\"subject\":\""+subject+"\"}],\"content\": [{\"type\": \"text/html\", \"value\": \""+link+"\"}],\"from\":{\"email\":\""+from+"\"}}";
+			String json= "{\"personalizations\":[{\"to\":[{\"email\":\""+to+"\"}],\"subject\":\""+subject+"\"}],\"content\": [{\"type\": \"text/html\", \"value\": \""+message+" "+link+"\"}],\"from\":{\"email\":\""+from+"\"}}";
 			System.out.println("Logging in params:"+originalParams);	
 			if (apiKey!=null&&!apiKey.isEmpty()) {
 				Client client = ClientBuilder.newClient();
@@ -115,7 +117,7 @@ public class LoginEndpoint {
 				System.out.println("Sent POST request to "+resourceWebTarget.getUri()+
 						"\n"+json+
 						"\nReceived response:"+r.getStatus()+"\n"+resEntity);
-				request.setAttribute("loginMessage", "An authorization code has been sent to "+to+".<br/>"+
+				request.setAttribute("loginMessage", "Authorization code sent to:<br/>"+to+"<br/>"+
 						"Please check your email.");
 			} else {
 				request.setAttribute("loginMessage", _ERROR+message);

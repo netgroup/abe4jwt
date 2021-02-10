@@ -14,6 +14,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import jj.play.ns.nl.captcha.Captcha;
+import jj.play.ns.nl.captcha.Captcha.Builder;
 import jj.play.ns.nl.captcha.backgrounds.GradiatedBackgroundProducer;
 import jj.play.ns.nl.captcha.noise.CurvedLineNoiseProducer;
 
@@ -22,7 +23,6 @@ import jj.play.ns.nl.captcha.noise.CurvedLineNoiseProducer;
 public class CaptchaEndpoint {
 
 	static CurvedLineNoiseProducer np=new CurvedLineNoiseProducer();
-	static GradiatedBackgroundProducer bp=new GradiatedBackgroundProducer();
 	
 	//Prepare login form: generate Captcha
 	@GET
@@ -34,7 +34,10 @@ public class CaptchaEndpoint {
 			request.getRequestDispatcher("/authenticate").forward(request, response);
 			return null;
 		}
-		Captcha captcha = new Captcha.Builder(200, 50).addText().addBackground(bp).addNoise(np).addBorder().build();
+		Builder builder=new Captcha.Builder(160, 50).addText().addNoise(np);
+		final int n=(int)(Math.random()*5); //may add additional noise
+		for (int i=0;i<n;i++) builder.addNoise(np);
+		Captcha captcha = builder.build();
 		ByteArrayOutputStream b=new ByteArrayOutputStream();
 		ImageIO.write(captcha.getImage(), "PNG", b);
 		originalParams.putSingle("captcha",captcha.getAnswer());

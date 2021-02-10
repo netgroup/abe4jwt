@@ -82,9 +82,10 @@ public class CallbackServlet extends AbstractServlet {
 				request.getSession().setAttribute(EPHKEY, o.getAsString(EPHKEY));
 				final String userId=o.getAsString(SUB);
 				final String scope=o.getAsString(SCOPE);
-				request.getSession().setAttribute(SUB, userId);
+				if (userId!=null) request.getSession().setAttribute(SUB, userId);
+				else request.getSession().removeAttribute(SUB); 
 				request.getSession().setAttribute(SCOPE, o.getAsString(SCOPE));
-				System.out.println("LOGIN completed for user "+userId+" allowed scope: "+scope);
+				if (userId!=null) System.out.println("LOGIN completed for user "+userId+" allowed scope: "+scope);
 //				System.out.println("JWT decrypted payload is:"+p.toString());				
 			} catch (NullPointerException e) {
 				System.out.println("--- --- --- ALERT DECRYPTION FAILED! --- --- ---");

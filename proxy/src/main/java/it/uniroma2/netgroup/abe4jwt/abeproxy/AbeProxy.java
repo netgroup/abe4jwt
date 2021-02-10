@@ -33,6 +33,7 @@ import com.nimbusds.jose.util.Base64URL;
 import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
 import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoProvider;
 import it.uniroma2.netgroup.abe4jwt.util.RandomString;
+import it.uniroma2.netgroup.abe4jwt.util.StringReplacer;
 import it.uniroma2.netgroup.abe4jwt.abeproxy.FakeHostnameVerifier;
 
 public class AbeProxy extends ProxyServlet {
@@ -290,7 +291,7 @@ public class AbeProxy extends ProxyServlet {
 						//						"|user:"+userId+ //userId not used anymore, as it is part of the resourceId
 						"|client_id:"+clientId+
 						"|audience:"+audience+
-						"|scope:"+resourceId+
+						"|scope:"+StringReplacer.replace(resourceId)+//workaround to encode valid path and fragment into ABE policy
 						"|exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(Date.from(Instant.now()));  //for the time being, we don't handle time, just assume expiration is today at midnight
 				super._log.info("[ABE-PROXY] generating secret:"+secret
 						+ "\n encrypt attributes: "+encryptInput);

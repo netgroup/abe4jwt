@@ -16,6 +16,7 @@ import com.nimbusds.jwt.SignedJWT;
 import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
 import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoProvider;
 import it.uniroma2.netgroup.abe4jwt.jose.KPABEDecrypter;
+import it.uniroma2.netgroup.abe4jwt.util.StringReplacer;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;

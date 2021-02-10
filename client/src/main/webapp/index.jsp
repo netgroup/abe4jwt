@@ -204,8 +204,8 @@
 					<div class="col-sm-12">
 						<h1>How to download the paper?</h1>
 						<p>Our paper is still under review, however, you can request a copy directly to the author via LinkedIn or ResearchGate</p>
-						<a class="wow fadeIn animated" data-wow-delay="0.25s" href="#"><img class="app-store-btn" src="img/LinkedIn.png" alt="App Store Icon"></a>
-						<a class="wow fadeIn animated" data-wow-delay="0.67s" href="#"><img class="google-play-btn" src="img/ResearchGate.png" alt="Google Play Icon"></a>
+						<a class="wow fadeIn animated" data-wow-delay="0.25s" href="https://www.linkedin.com/posts/giovannibartolomeo_encryption-cloud-activity-6758086258146205696-J80c"><img class="app-store-btn" src="img/LinkedIn.png" alt="Linkedin Icon"></a>
+						<a class="wow fadeIn animated" data-wow-delay="0.67s" href="https://www.researchgate.net/publication/348372992_Attribute-Based_Encryption_for_Access_Control_in_Cloud_Ecosystems"><img class="google-play-btn" src="img/ResearchGate.png" alt="ResearchGate Icon"></a>
 					</div>
 				</div>
 			</div>

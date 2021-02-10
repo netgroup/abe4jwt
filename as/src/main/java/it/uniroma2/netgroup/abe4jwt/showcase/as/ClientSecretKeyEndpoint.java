@@ -42,7 +42,7 @@ public class ClientSecretKeyEndpoint {
 	private static final int MAX_ATTEMPT = 20;
 
 	@GET
-	public Response getClientKey(@QueryParam("url") String url, @QueryParam("state") String state) {
+	public Response getClientKey(@QueryParam("redirect_uri") String url, @QueryParam("state") String state) {
 		try {
 
 			URI location = UriBuilder.fromUri(url)
