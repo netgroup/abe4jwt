@@ -1,10 +1,9 @@
 package it.uniroma2.netgroup.abe4jwt.showcase.as;
 
-import java.io.File;
 import java.net.URI;
-import java.security.KeyStore;
-import java.util.Arrays;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -13,16 +12,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.eclipse.microprofile.config.Config;
 
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.util.Base64;
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.crypto.DirectEncrypter;
+import com.nimbusds.jose.util.Base64URL;
 
 import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
 
@@ -56,14 +58,22 @@ public class ClientSecretKeyEndpoint {
 				clientId.append(path.substring(0,path.lastIndexOf("/")));
 				System.out.println("Generating key for client: "+clientId+"\nurl:"+url); 
 				//key must be in this form: client_id:<client-uri>
-				String key=AbeCryptoFactory.get().keyGen("client_id:"+clientId.toString()).toString();	
-				String returnString=ship(key,location.toString());
-				System.out.println("Response: "+returnString);
-				return Response.ok(
-						https?
-								returnString:
-									("WARNING:"+url+" is not a HTTPS URL, key is shipped without confidentiality.\n"+returnString)
-						).build();
+				String clientKey=AbeCryptoFactory.get().keyGen("client_id:"+clientId.toString()).toString();
+				//encrypt the client's key using AES 128 GCM
+				KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+				keyGen.init(EncryptionMethod.A128GCM.cekBitLength());
+		        JWEObject jweObject = new JWEObject(new JWEHeader(JWEAlgorithm.DIR, EncryptionMethod.A128GCM), 
+		        									new Payload(clientKey));
+		        SecretKey AESKey=keyGen.generateKey();
+		        jweObject.encrypt(new DirectEncrypter(AESKey));
+		        //ship the encrypted client's key
+				String returnString=ship(jweObject.serialize(),location.toString());
+				//return the AES 128 GCM key used in encrypting the client's key
+				String aesKey=Base64URL.encode(AESKey.getEncoded()).toString();
+				System.out.println("Client's key: "+clientKey+
+						"\nencrypted with AES key: "+aesKey+
+						"\nand shipped to client. Response: "+returnString);
+				return Response.ok(aesKey).build();
 			}
 			return Response.serverError().entity("ERROR:"+url+" is not a HTTP(S) URL").build();
 		} catch (Exception e) {
@@ -72,6 +82,8 @@ public class ClientSecretKeyEndpoint {
 		}
 	}
 
+
+	
 	private String ship(String key, String url) {
 		//Some DNS names pointing to container implementations (noticeably play-with-docker.com)
 		//returns more than one IP address provided in the DNS A record. Only some of these IPs supports HTTPS,

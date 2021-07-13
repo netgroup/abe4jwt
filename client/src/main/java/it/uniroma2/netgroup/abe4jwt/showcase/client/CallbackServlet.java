@@ -1,47 +1,30 @@
 package it.uniroma2.netgroup.abe4jwt.showcase.client;
 
-import org.eclipse.microprofile.config.Config;
-
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.Payload;
-import com.nimbusds.jose.util.Base64URL;
-import com.nimbusds.jose.util.IOUtils;
-import com.nimbusds.jwt.EncryptedJWT;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.PlainJWT;
-
-import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
-import it.uniroma2.netgroup.abe4jwt.jose.KPABEDecrypter;
-import net.minidev.json.JSONObject;
-
-import javax.inject.Inject;
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Form;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.text.ParseException;
-import java.util.Base64;
+
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.microprofile.config.Config;
+
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.EncryptedJWT;
+
+import it.uniroma2.netgroup.abe4jwt.jose.KPABEDecrypter;
+import net.minidev.json.JSONObject;
 
 @WebServlet(urlPatterns = "/callback")
 public class CallbackServlet extends AbstractServlet {
 
+	private static final int MAX_ATTEMPT = 4;
+	
 	@Inject
 	private Config config;
 
@@ -98,23 +81,25 @@ public class CallbackServlet extends AbstractServlet {
 		} 
 	}
 	
-	//Used to receive the client's secret key (see JWKEndpoint in AS). 
+	//Used to asynchronously receive the client's secret key (see ClientSecretKeyEndpoint.java in AS). 
+	//As the client's key is encrypted using AES GCM, this procedure stores the wrapped key in the servlet's context
 	//The client's key request procedure starts up when AuthorizationCodeServlet.init() method is invoked.
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String localState = (String) getServletContext().getAttribute(AbstractServlet.CLIENT_LOCAL_STATE);
 		if (localState!=null&&!localState.equals(request.getParameter("state"))) {
-			System.out.println("Client's secret response received but the state parameter is not matching:"
+			System.out.println("The state parameter is not matching:"
 					+ "\nlocal state:"+localState
 					+ "\nreceived:"+request.getParameter("state")
 					);
+			response.setStatus(404, "The state parameter is not matching");
 			return; //wrong state!
 		}
+		//decode http response content
 		ByteArrayOutputStream writer=new ByteArrayOutputStream();
 		transferTo(request.getInputStream(),writer);
-		String key=writer.toString();
-		getServletContext().setAttribute(AbstractServlet.CLIENT_KEY,key);
-		System.out.println("Client's secret key is:"+key);
+		String jweString=writer.toString();
+		getServletContext().setAttribute(AbstractServlet.ENCRYPTED_CLIENT_KEY,jweString);
 	}	
 	
 	

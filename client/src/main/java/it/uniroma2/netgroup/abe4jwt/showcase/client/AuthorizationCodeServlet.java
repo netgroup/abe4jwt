@@ -1,33 +1,29 @@
 package it.uniroma2.netgroup.abe4jwt.showcase.client;
 
-import org.eclipse.microprofile.config.Config;
+import java.io.IOException;
+import java.util.UUID;
 
-import com.nimbusds.jose.util.Base64;
-
-import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
-import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoProvider;
-
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.inject.Inject;
-import javax.net.ssl.SSLContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.util.UUID;
+import org.eclipse.microprofile.config.Config;
+
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.crypto.DirectDecrypter;
+import com.nimbusds.jose.util.Base64URL;
+
+import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoFactory;
+import it.uniroma2.netgroup.abe4jwt.crypto.AbeCryptoProvider;
 
 @WebServlet(urlPatterns = "/authorize")
 public class AuthorizationCodeServlet extends HttpServlet {
@@ -126,8 +122,34 @@ public class AuthorizationCodeServlet extends HttpServlet {
 				.queryParam("state", state);
 		r=resourceWebTarget.request().get();
 		int code=r.getStatus();
-		System.out.println("Client's secret key has been requested to "+targetUri+"!"+
-				"\nThe request returned code:"+code+" message:"+r.readEntity(String.class));
+		String response=r.readEntity(String.class);
+		System.out.println("Client's secret key has been requested to "+targetUri+
+				"\nThe request returned code:"+code+
+				"\n"+response);
+		if (code!=200) { 	
+			System.out.println("FATAL: no client's key received from Authorization Server. Client is terminated.");
+			System.exit(1);
+		}
+	    String wrappedKey=(String) getServletContext().getAttribute(AbstractServlet.ENCRYPTED_CLIENT_KEY);
+		if (wrappedKey==null) {
+			System.out.println("FATAL: no client's key received from Authorization Server. Client is terminated.");
+			System.exit(1);
+		}
+
+		System.out.println("Authorization Server returned AES key: "+response);
+		System.out.println("Wrapped client's key: "+wrappedKey);
+	    SecretKey AESKey = new SecretKeySpec(new Base64URL(response).decode(), 0, 16, "AES");
+	    try {
+			JWEObject jweObject = JWEObject.parse(wrappedKey);
+		    jweObject.decrypt(new DirectDecrypter(AESKey));
+			String clientKey=jweObject.getPayload().toString();
+			getServletContext().setAttribute(AbstractServlet.CLIENT_KEY,clientKey);
+			System.out.println("==> Client's secret key is:"+clientKey); //bingo!
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("FATAL: cannot decrypt client's key with received AES key. Client is terminated.");
+			System.exit(1);
+		}
 		return code;
 	}
 
