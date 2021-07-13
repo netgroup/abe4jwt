@@ -93,17 +93,17 @@ public class JWTFactory {
     private Base64URL ephkey(String issuer, String client, String user, String audience, String approvedScope, Date expirationTime) {
 		if (approvedScope==null) return null;
     	Base64URL ephkey;
-		String[] scopes=approvedScope.split(" ");
-		StringBuilder sb=new StringBuilder("(scope:"+StringReplacer.replace(scopes[0])); //normalizing scope, look at AbeProxy.generateRealm()
-		for (int i=1;i<scopes.length;i++) sb.append(" or scope:"+StringReplacer.replace(scopes[i]));  //normalizing scope, look at AbeProxy.generateRealm()
-		
+//		String[] scopes=approvedScope.split(" ");
+//		StringBuilder sb=new StringBuilder("(scope:"+StringReplacer.replace(scopes[0])); //normalizing scope, look at AbeProxy.generateRealm()
+//		for (int i=1;i<scopes.length;i++) sb.append(" or scope:"+StringReplacer.replace(scopes[i]));  //normalizing scope, look at AbeProxy.generateRealm()
+
 		try {
 			String keyString = "issuer:"+issuer+
-//					" and user:"+user+ //not used as it is part of the resourceId (specified in scope)
-					" and client_id:"+client+
-					" and audience:"+audience+
-					" and "+sb.append(")").toString()+
-					" and exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(expirationTime);
+//					"|user:"+user+ //not used as it is part of the resourceId (specified in scope)
+					"|client_id:"+client+
+					"|audience:"+audience+
+					"|scope:"+approvedScope.replaceAll(" ", "|scope:")+
+					"|exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(expirationTime);
 			System.out.println("---------------\n"
 					+ "--> GENERATING EPHEMERAL KEY FROM POLICY:\n"+keyString+"\n"
 							+ "\n---------------");

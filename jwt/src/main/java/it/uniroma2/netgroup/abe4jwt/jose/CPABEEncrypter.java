@@ -16,21 +16,21 @@ import net.jcip.annotations.ThreadSafe;
 
 
 @ThreadSafe
-public class KPABEEncrypter extends Encrypter {
+public class CPABEEncrypter extends Encrypter {
 
-	public KPABEEncrypter(String attributes) {
-		super(attributes);
+	public CPABEEncrypter(String policy) {
+		super(policy);
 	}
 
 	public JWECryptoParts encrypt(final JWEHeader header, final byte[] clearText) throws JOSEException {
-		if ("KP-ABE".equals(header.getAlgorithm().getName())) {
+		if ("CP-ABE".equals(header.getAlgorithm().getName())) {
 				try {
 					return AbeCryptoFactory.get().encrypt(header, clearText, encInput);
 				} catch (Exception e) {
 					throw new JOSEException(e.getMessage(),e);
 				}
 		}
-		throw new JOSEException("Algorithm not supported. Must be KP-ABE.");
+		throw new JOSEException("Algorithm not supported. Must be CP-ABE.");
 	}
-
+	
 }

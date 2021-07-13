@@ -27,22 +27,21 @@ import net.jcip.annotations.ThreadSafe;
 
 
 @ThreadSafe
-public class KPABEDecrypter extends Decrypter {
+public class CPABEDecrypter extends Decrypter {
 	
-	public KPABEDecrypter(final Base64URL privateKey) {
+	public CPABEDecrypter(final Base64URL privateKey) {
 		super(privateKey);
 	}
 	
 	public byte[] decrypt(final JWEHeader header, final Base64URL encryptedKey, final Base64URL iv, final Base64URL cipherText, final Base64URL authTag) throws JOSEException {
-		if ("KP-ABE".equals(header.getAlgorithm().getName())) {
+		if ("CP-ABE".equals(header.getAlgorithm().getName())) {
 			try {
 				return AbeCryptoFactory.get().decrypt(header, privateKey, encryptedKey, cipherText);
 			} catch (Exception e) {
 				throw new JOSEException(e.getMessage(),e);
 			}
 		}
-		throw new JOSEException("Algorithm not supported. Must be KP-ABE.");
+		throw new JOSEException("Algorithm not supported. Must be CP-ABE.");
 	}
-
 }
 

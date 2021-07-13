@@ -219,7 +219,7 @@ public class AbeProxy extends ProxyServlet {
 		if (_audience==null) {
 			_audience=request.getRequestURL().toString();
 			String extra=request.getPathInfo();
-			if (extra!=null) _audience=_audience.substring(0,_audience.indexOf(extra)); //TODO: fix this!
+			if (extra!=null) _audience=_audience.substring(0,_audience.indexOf(extra));
 			super._log.info("This is the first incoming request to the Proxy, performing " +
 					"initialization by discovering self identifier...\n"+
 					"-original request URL:"+request.getRequestURL()+"\n"+
@@ -287,16 +287,16 @@ public class AbeProxy extends ProxyServlet {
 				StringBuffer encKey=new StringBuffer(); //will hold simmetric encryption key
 				byte[] plainText=secret.getBytes();
 				final String encryptInput="issuer:"+_authority+
-						//						"|user:"+userId+ //userId not used anymore, as it is part of the resourceId
-						"|client_id:"+clientId+
-						"|audience:"+audience+
-						"|scope:"+StringReplacer.replace(resourceId)+//workaround to encode valid path and fragment into ABE policy
-						"|exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(Date.from(Instant.now()));  //for the time being, we don't handle time, just assume expiration is today at midnight
+						//						" and user:"+userId+ //userId not used anymore, as it is part of the resourceId
+						" and client_id:"+clientId+
+						" and audience:"+audience+
+						" and scope:"+StringReplacer.replace(resourceId)+//workaround to encode valid path and fragment into ABE policy
+						" and exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(Date.from(Instant.now()));  //for the time being, we don't handle time, just assume expiration is today at midnight
 				super._log.info("[ABE-PROXY] generating secret:"+secret
 						+ "\n encrypt attributes: "+encryptInput);
 				long t=System.currentTimeMillis();
 				Base64URL encrypted=_abeProvider.encrypt(encryptInput, plainText, encKey);
-				//then, encrypt once more using: clientID
+				//then, encrypt once more using: clientID (Identity Based Encryption-style fashion) 
 				StringBuffer encKey2=new StringBuffer(); //will hold simmetric encryption key
 				Base64URL encrypted2=_abeProvider.encrypt("client_id:"+clientId, (encKey.toString()+"_"+encrypted.toString()).getBytes(), encKey2);
 				realm=encKey2.toString()+"_"+encrypted2.toString();

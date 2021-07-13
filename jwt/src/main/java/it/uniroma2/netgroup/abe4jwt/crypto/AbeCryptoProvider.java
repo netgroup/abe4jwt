@@ -20,7 +20,7 @@ public class AbeCryptoProvider {
 	private final String __authority,__scheme;
 
 	public AbeCryptoProvider() throws Exception {
-		this("example.org","KP");
+		this("example.org","CP");
 	}
 
 	public AbeCryptoProvider(final String authority, final String scheme) throws Exception {
@@ -76,8 +76,8 @@ public class AbeCryptoProvider {
 		String id=UUID.randomUUID().toString();
 		Base64URL plainBase64=Base64URL.encode(plainText);
 		String output=exec("echo \""+plainBase64+"\">\""+id+".txt\"&&\\\n"
-				+ "oabe_enc -s \""+__scheme+"\" -p \""+__authority+"\" -e \""+encryptInput+"\" -i \""+id+".txt\" -o \""+id+".kpabe\">null\\\n"
-				+ "&&cat \""+id+".kpabe\"");
+				+ "oabe_enc -s \""+__scheme+"\" -p \""+__authority+"\" -e \""+encryptInput+"\" -i \""+id+".txt\" -o \""+id+"."+__scheme.toLowerCase()+"abe\">null\\\n"
+				+ "&&cat \""+id+"."+__scheme.toLowerCase()+"abe\"");
 //		//encoding regex expr: (-+BEGIN ABE.*-+\n)([^\n]*)(\n-+END ABE.*-+)(\n-+BEGIN CIPHER.*-+\n)([^\n]*)(\n-+END CIPHER.*-+.*)
 //		Pattern p=Pattern.compile("(-+BEGIN ABE.*-+\\n)([^\\n]*)(\\n-+END ABE.*-+)(\\n-+BEGIN CIPHER.*-+\\n)([^\\n]*)(\\n-+END CIPHER.*-+.*)"); 
 		String[] str=output.split("\n");
@@ -98,8 +98,8 @@ public class AbeCryptoProvider {
 						"-----END CIPHERTEXT BLOCK-----",
 				id=UUID.randomUUID().toString(),
 				output=exec("echo \""+key+"\">\""+id+".key\"&&\\\n"
-						+ "echo \""+block+"\">\""+id+".kpabe\"&&\\\n"
-						+ "oabe_dec -s \""+__scheme+"\" -p \""+__authority+"\" -k \""+id+".key\" -i \""+id+".kpabe\" -o \""+id+".txt\">null\\\n"
+						+ "echo \""+block+"\">\""+id+"."+__scheme.toLowerCase()+"abe\"&&\\\n"
+						+ "oabe_dec -s \""+__scheme+"\" -p \""+__authority+"\" -k \""+id+".key\" -i \""+id+"."+__scheme.toLowerCase()+"abe\" -o \""+id+".txt\">null\\\n"
 						+ "&&cat \""+id+".txt\"");
 		return new Base64URL(output).decode();
 	}	
