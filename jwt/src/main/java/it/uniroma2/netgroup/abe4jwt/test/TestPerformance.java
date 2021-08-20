@@ -122,20 +122,21 @@ public class TestPerformance {
 		//generate ephemeral key
 		String[] scopes=approvedScope.split(" ");
 		int n=(int)((Math.random()*scopes.length));
-		StringBuilder sb=new StringBuilder("(");
-		for (int i=0;i<n;i++) sb.append("scope:"+scopes[i]+" or ");
+		StringBuilder sb=new StringBuilder();
+		for (int i=0;i<n;i++) sb.append("|scope:"+scopes[i]);
 		try {
 			long t0=System.currentTimeMillis();
 			Base64URL k=AbeCryptoFactory.get().keyGen("issuer:"+issuer+
-					" and user:"+user+
-					" and client_id:"+client+
-					" and audience:"+audience+
-					" and "+sb.append(scopes[n]+")").toString()+
-					" and exp:"+expirationTime.getTime());
+					"|user:"+user+
+					"|client_id:"+client+
+					"|audience:"+audience+
+					sb.toString()+
+					"|exp:"+expirationTime.getTime());
 			long t=System.currentTimeMillis();
 			System.out.println(" "+(t-startTime)+" "+(t-t0)+" "+n+" "+k.toString().length());
 		} catch (Exception e) {
 			System.out.println("Ephemeral key generation failure.");
+			e.printStackTrace();
 			return;
 		}
 	}
@@ -148,10 +149,10 @@ public class TestPerformance {
 				StringBuffer encKey=new StringBuffer(); //will hold symmetric encryption key
 				byte[] plainText=secret.getBytes();
 				final String encryptInput="issuer:"+ISSUER+
-						"|client_id:"+clientId+
-						"|audience:"+AUDIENCE+
-						"|scope:"+resourceId+
-						"|exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(Date.from(Instant.now()));  //for the time being, we don't handle time, just assume expiration is today at midnight
+						" and client_id:"+clientId+
+						" and audience:"+AUDIENCE+
+						" and scope:"+resourceId+
+						" and exp:"+(new SimpleDateFormat("yyyy-MM-dd")).format(Date.from(Instant.now()));  //for the time being, we don't handle time, just assume expiration is today at midnight
 				long t0=System.currentTimeMillis();
 				Base64URL encrypted=_abeProvider.encrypt(encryptInput, plainText, encKey);
 				//then, encrypt once more using: clientID
@@ -161,6 +162,7 @@ public class TestPerformance {
 				long t=System.currentTimeMillis();
 				System.out.println(" "+(t-startTime)+" "+(t-t0)+" "+realm.length());
 			} catch (Exception e) {
+				System.out.println("Encryption failure.");
 				e.printStackTrace();
 			}
 		} else { 

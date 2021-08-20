@@ -8,7 +8,11 @@ public class AbeCryptoFactory {
 				:__provider;
 	}
 	public static AbeCryptoProvider get(final String authority, final String scheme) throws Exception {
-		return __provider==null?__provider=new AbeCryptoProvider(authority,scheme)
-				:__provider;
+		if ( __provider==null) return __provider=new AbeCryptoProvider(authority,scheme);
+		if (!__provider.getAuthority().equals(authority)
+				||!__provider.getScheme().equals(scheme)) throw new Exception("Authority or scheme does not match with existing provider."
+						+ "\nExisting Provider parameter: Authority:"+__provider.getAuthority()+
+						",Scheme:"+__provider.getScheme());
+		return __provider;
 	}
 }

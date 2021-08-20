@@ -17,6 +17,14 @@ import com.nimbusds.jose.util.Base64URL;
 
 public class AbeCryptoProvider {
 
+	public String getAuthority() {
+		return __authority;
+	}
+
+	public String getScheme() {
+		return __scheme;
+	}
+
 	private final String __authority,__scheme;
 
 	public AbeCryptoProvider() throws Exception {
@@ -64,7 +72,7 @@ public class AbeCryptoProvider {
 		//oabe_keygen -s SCHEME -p AUTHORITY -i input -o output
 		//input: attribute list for 'CP', policy for 'KP'
 		String id=UUID.randomUUID().toString(),
-				output=exec("oabe_keygen -s \""+__scheme+"\" -p \""+__authority+"\" -i \""+input+"\" -o \""+id+"\">null\\\n"
+				output=exec("oabe_keygen -s \""+__scheme+"\" -p \""+__authority+"\" -i \""+input+"\" -o \""+id+"\" >null\\\n"
 						+ "&&cat \""+id+".key\"");
 		return new Base64URL(output.split("\n")[1]);
 //		return new Base64URL(output.replaceAll("(-+BEGIN.*-+\\n)([^\\n]*)(\\n-+END.*-+)","$2"));  //encoding regex expr: (-+BEGIN.*-+\n)([^\n]*)(\n-+END.*-+)
@@ -76,7 +84,7 @@ public class AbeCryptoProvider {
 		String id=UUID.randomUUID().toString();
 		Base64URL plainBase64=Base64URL.encode(plainText);
 		String output=exec("echo \""+plainBase64+"\">\""+id+".txt\"&&\\\n"
-				+ "oabe_enc -s \""+__scheme+"\" -p \""+__authority+"\" -e \""+encryptInput+"\" -i \""+id+".txt\" -o \""+id+"."+__scheme.toLowerCase()+"abe\">null\\\n"
+				+ "oabe_enc -s \""+__scheme+"\" -p \""+__authority+"\" -e \""+encryptInput+"\" -i \""+id+".txt\" -o \""+id+"."+__scheme.toLowerCase()+"abe\" >null\\\n"
 				+ "&&cat \""+id+"."+__scheme.toLowerCase()+"abe\"");
 //		//encoding regex expr: (-+BEGIN ABE.*-+\n)([^\n]*)(\n-+END ABE.*-+)(\n-+BEGIN CIPHER.*-+\n)([^\n]*)(\n-+END CIPHER.*-+.*)
 //		Pattern p=Pattern.compile("(-+BEGIN ABE.*-+\\n)([^\\n]*)(\\n-+END ABE.*-+)(\\n-+BEGIN CIPHER.*-+\\n)([^\\n]*)(\\n-+END CIPHER.*-+.*)"); 
@@ -99,7 +107,7 @@ public class AbeCryptoProvider {
 				id=UUID.randomUUID().toString(),
 				output=exec("echo \""+key+"\">\""+id+".key\"&&\\\n"
 						+ "echo \""+block+"\">\""+id+"."+__scheme.toLowerCase()+"abe\"&&\\\n"
-						+ "oabe_dec -s \""+__scheme+"\" -p \""+__authority+"\" -k \""+id+".key\" -i \""+id+"."+__scheme.toLowerCase()+"abe\" -o \""+id+".txt\">null\\\n"
+						+ "oabe_dec -s \""+__scheme+"\" -p \""+__authority+"\" -k \""+id+".key\" -i \""+id+"."+__scheme.toLowerCase()+"abe\" -o \""+id+".txt\" >null\\\n"
 						+ "&&cat \""+id+".txt\"");
 		return new Base64URL(output).decode();
 	}	
