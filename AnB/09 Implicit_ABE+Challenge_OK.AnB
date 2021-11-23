@@ -1,0 +1,56 @@
+#
+# A model for OpenID Connect Authorization Code Flow implemented in AnC 
+# specification language. To use this file, download the checker:
+# Open-Source Fixed-Point Model-Checker (OFMC)
+# from https://www.imm.dtu.dk/~samo/
+# (last access on 13th October 2021)
+#
+# Same model as in 08 Implicit_ABE+Challenge_Flawed.AnB, but including the Nonce
+# parameter in the returned ciphertext. The Client is able to check that the 
+# message is from the legitimate Authorization Server and not from an attacker. 
+# No attack was found till two simultaneous runs.
+#
+
+Protocol: OIDC_Implicit_ABE
+
+Types: Agent    as, #Authorization Server (constant)
+	        RS, #Resource Server
+	         C, #Client
+	     Scope; #Dummy agent modeling "Scope" parameter
+       Function  h, #as generated ephemeral key
+                pk, #as generated Client's key
+          resource; #user authorized resource to be accessed
+      Number State, #OIDC AuthFlow parameter
+              Code, #OIDC AuthFlow parameter
+             Nonce, #OIDC AuthFlow parameter
+         Challenge, #challenge-response parameter
+              Data, #RS returns this data on successfull authorization
+           Session; #shared session between RS and C
+
+
+Knowledge: 
+	   as: as,C,RS,Scope,pk(C),inv(h(C,as,RS,Scope));
+	   RS: RS,as,C,Scope,
+               #Apparently, RS must know pk(C),h(C,as,RS,Scope). 
+               #However, in ABE these are trivially computed
+               #from ABE master public key.
+               #\/    \/    \/
+               pk(C), h(C,as,RS,Scope); 
+	   C: C,RS,pk(C),inv(pk(C)),h,Scope;
+  	   where RS!=C, RS!=as, C!=as
+
+Actions:
+C->RS: Scope
+RS*->C: as,{{Challenge}h(C,as,RS,Scope)}pk(C)
+
+C->as: C,RS,Scope,Nonce
+as->C: {inv(h(C,as,RS,Scope)),Nonce}pk(C)
+
+[C] *->* RS : Scope,Challenge,Session
+RS *->* [C] : Data,Session
+
+Goals:
+C authenticates as on C,RS,Scope,Nonce
+RS authenticates C on Challenge
+C authenticates RS on Data
+Data secret between RS,C

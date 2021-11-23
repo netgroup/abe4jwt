@@ -1,0 +1,56 @@
+﻿#
+# A model for OpenID Connect Authorization Code Flow implemented in AnB 
+# specification language. To use this file, download the checker:
+# Open-Source Fixed-Point Model-Checker (OFMC)
+# from https://www.imm.dtu.dk/~samo/
+# (last access on 13th October 2021)
+#
+# Same model as 02 Auth_Code_noPKCE_Nonce_OK.AnB, but Nonce is now calculated 
+# from Session. Note that no PKCE nor DPoP is used. The flow is not safe, 
+# if the Session parameter is leaked to the attacker.
+#
+
+
+
+Protocol: OIDC_AuthCodeFlow
+
+Types: Agent    as, #Authorization Server (constant)
+	        RS, #Resource Server
+	         C; #Client
+       Function pw, #shared password between as and C
+                pk, #as public key
+          resource, #user authorized resource to be accessed
+              code, #authorization code
+              hash, #PKCE trapdoor function
+             nonce; #OIDC AuthFlow parameter (computed from Session)
+      Number Scope, #OIDC AuthFlow parameter
+             State, #OIDC AuthFlow parameter
+              Data, #RS returns this data on successfull authorization
+           Session, #shared session between RS and C
+          Verifier; #Verifier used in PKCE
+
+Knowledge: 
+           as: as,pk(as),inv(pk(as)),C,pw(as,C),code,resource,hash;
+           RS: RS,as,pk(as);
+            C: C,RS,pk(as),pw(as,C),hash,nonce;
+         where RS!=C, RS!=as, C!=as
+
+Actions:
+C->RS:Scope
+RS*->C:Scope,as,Session
+
+[C]*->*as: RS,Scope,State,nonce(Session) #nonce is computed from Session
+as->[C]: State,code(Scope,State,nonce(Session)),Scope
+
+[C]*->*as:C,pw(as,C),code(Scope,State,nonce(Session))#,Verifier 
+as*->[C]:{resource(code(Scope,State,nonce(Session))),C,as,RS,nonce(Session)}inv(pk(as)),code(Scope,State,nonce(Session))  #this channel is no more confidential
+
+[C]*->*RS:{resource(code(Scope,State,nonce(Session))),C,as,RS,nonce(Session)}inv(pk(as)),Session
+RS*->*[C]:Data,Session
+
+Goals:
+RS authenticates C on RS,resource(code(Scope,State,nonce(Session))),C,as,Session
+C authenticates RS on Data 
+Data secret between RS,C
+C authenticates as on State, Scope,code(Scope,State,nonce(Session))
+as weakly authenticates C on C,pw(as,C),code(Scope,State,nonce(Session))

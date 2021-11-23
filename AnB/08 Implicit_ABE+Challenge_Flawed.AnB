@@ -1,0 +1,65 @@
+#
+# A model for OpenID Connect Authorization Code Flow implemented in AnC 
+# specification language. To use this file, download the checker:
+# Open-Source Fixed-Point Model-Checker (OFMC)
+# from https://www.imm.dtu.dk/~samo/
+# (last access on 13th October 2021)
+#
+# Flow using OpenID Connect Implicit, Attribute-Based Encryption, and
+# challenge/response authentication. Due to OFMC limitations, we did not consider
+# master keys and key generations, rather we use two precomputed sets of 
+# traditional asymmetric keys, one for the client’s key {pk(B), inv(pk(SP))}
+# and the second one for the ephemeral key
+# {h(B,idp,SP,Scope), inv(h(B,idp,SP,Scope))}. 
+# Also, the parameter Scope is given the role of “Agent”, as no key in OFMC 
+# can be associated to a parameter of type “Number” (nevertheless OFMC handles 
+# the Scope parameter as any other variable). 
+# This flow is not safe, as the attacker may impersonate the Authorization 
+# Server and returns an ephemeral key to the Client.
+#
+
+
+
+Protocol: OIDC_Implicit_ABE
+
+Types: Agent    as, #Authorization Server (constant)
+	        RS, #Resource Server
+	         C, #Client
+	     Scope; #Dummy agent modeling "Scope" parameter
+       Function  h, #as generated ephemeral key
+                pk, #as generated Client's key
+          resource; #user authorized resource to be accessed
+      Number State, #OIDC AuthFlow parameter
+              Code, #OIDC AuthFlow parameter
+             Nonce, #OIDC AuthFlow parameter
+         Challenge, #challenge-response parameter
+              Data, #RS returns this data on successfull authorization
+           Session; #shared session between RS and C
+
+
+Knowledge: 
+	   as: as,C,RS,Scope,pk(C),inv(h(C,as,RS,Scope));
+	   RS: RS,as,C,Scope,
+               #Apparently, RS must know pk(C),h(C,as,RS,Scope). 
+               #However, in ABE these are trivially computed
+               #from ABE master public key.
+               #\/    \/    \/
+               pk(C), h(C,as,RS,Scope); 
+	   C: C,RS,pk(C),inv(pk(C)),h,Scope;
+  	   where RS!=C, RS!=as, C!=as
+
+Actions:
+C->RS: Scope
+RS*->C: as,{{Challenge}h(C,as,RS,Scope)}pk(C)
+
+C->as: C,RS,Scope,Nonce
+as->C: {inv(h(C,as,RS,Scope))}pk(C)
+
+[C] *->* RS : Scope,Challenge,Session
+RS *->* [C] : Data,Session
+
+Goals:
+C authenticates as on C,RS,Scope,Nonce
+RS authenticates C on Challenge
+C authenticates RS on Data
+Data secret between RS,C

@@ -1,0 +1,53 @@
+Open-Source Fixedpoint Model-Checker version 2020
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 168 ms
+  parseTime 4 ms
+  visitedNodes: 28 nodes
+  depth: 6 plies
+
+ATTACK TRACE:
+(x901,1) -> i: Scope(1)
+i -> (x901,1): {Scope(1),as,x407}_inv(authChCr(i))
+
+#attacker asks the as for a code on behalf of C
+#assumed user authorizes, a code is returned
+i -> (as,1): i,x306,x307,x308
+(as,1) -> i: x307,code(x306,x307,x308),x306
+
+#attacker impersonates as and return C a wrong code
+(x901,1) -> i: i,Scope(1),State(3),Nonce(3)
+i -> (x901,1): State(3),code(x306,x307,x308),Scope(1)
+
+#C's code4token exchange
+(x901,1) -> i: pseudonym(x901),{|x901,pw(as,x901),code(x306,x307,x308)|}_(secChCr(pseudonym(x901),as))
+i -> (as,1): pseudonym(x901),{|x901,pw(as,x901),code(x306,x307,x308)|}_(secChCr(pseudonym(x901),as))
+(as,1) -> i: {|{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),code(x306,x307,x308)|}_(secChCr(as,pseudonym(x901)))
+i -> (x901,1): {|{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),code(x306,x307,x308)|}_(secChCr(as,pseudonym(x901)))
+
+#C uses the wrong token
+(x901,1) -> i: pseudonym(x901),{|{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),x407|}_(secChCr(pseudonym(x901),i))
+i -> (x901,1): {|x812,x407|}_(secChCr(i,pseudonym(x901)))
+
+
+% Reached State:
+% 
+% request(x901,as,pCasStateScopecodeScopeStateNonce,State(3),Scope(1),code(x306,x307,x308),1)
+% contains(secrecyset(x901,1,pData),x901)
+% contains(secrecyset(x901,1,pData),i)
+% secrets(x812,secrecyset(x901,1,pData),i)
+% request(x901,i,pCRSData,x812,1)
+% state_rC(x901,5,hash,pw(as,x901),pk(as),i,Scope(1),x407,as,Scope(1),as,x407,State(3),Nonce(3),i,Scope(1),State(3),Nonce(3),code(x306,x307,x308),State(3),code(x306,x307,x308),Scope(1),x901,pw(as,x901),code(x306,x307,x308),resource(code(x306,x307,x308)),{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),code(x306,x307,x308),{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),x407,x812,x812,x407,1)
+% state_rRS(x29,0,pk(as),as,1)
+% state_ras(as,2,hash,resource,code,pw(as,x901),x901,inv(pk(as)),pk(as),x308,x307,x306,i,i,x306,x307,x308,x307,code(x306,x307,x308),x306,code(x306,x307,x308),x901,pw(as,x901),code(x306,x307,x308),pseudonym(x901),{resource(code(x306,x307,x308)),x901,as,i}_inv(pk(as)),code(x306,x307,x308),1)
+% witness(as,x901,pCasStateScopecodeScopeStateNonce,x307,x306,code(x306,x307,x308))
+% witness(x901,as,pasCCpwasCcodeScopeStateNonce,x901,pw(as,x901),code(x306,x307,x308))
+% wrequest(as,x901,pasCCpwasCcodeScopeStateNonce,x901,pw(as,x901),code(x306,x307,x308),i)
+% witness(x901,i,pRSCRSresourcecodeScopeStateNonceCasSession,i,resource(code(x306,x307,x308)),x901,as,x407)

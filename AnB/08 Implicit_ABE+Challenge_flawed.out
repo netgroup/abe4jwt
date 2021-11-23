@@ -1,0 +1,38 @@
+﻿Open-Source Fixedpoint Model-Checker version 2020
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 80 ms
+  parseTime 4 ms
+  visitedNodes: 45 nodes
+  depth: 4 plies
+
+ATTACK TRACE:
+(x701,1) -> i: x32
+i -> (as,1): x701,i,x32,x307
+(as,1) -> i: {inv(h(x701,as,i,x32))}_(pk(x701))
+i -> (x701,1): {as,{{x505}_(h(x701,as,i,x32))}_(pk(x701))}_inv(authChCr(i))
+(x701,1) -> i: x701,i,x32,Nonce(3)
+i -> (x701,1): {inv(h(x701,as,i,x32))}_(pk(x701))
+(x701,1) -> i: pseudonym(x701),{|x32,x505,Session(4)|}_(secChCr(pseudonym(x701),i))
+i -> (x701,1): {|x609,Session(4)|}_(secChCr(i,pseudonym(x701)))
+
+
+% Reached State:
+% 
+% request(x701,as,pCasCRSScopeNonce,x701,i,x32,Nonce(3),1)
+% request(x701,i,pCRSData,x609,1)
+% secrets(x609,secrecyset(x701,1,pData),i)
+% contains(secrecyset(x701,1,pData),i)
+% contains(secrecyset(x701,1,pData),x701)
+% state_rC(x701,4,x32,h,inv(pk(x701)),pk(x701),i,{{x505}_(h(x701,as,i,x32))}_(pk(x701)),as,{x505}_(h(x701,as,i,x32)),as,{{x505}_(h(x701,as,i,x32))}_(pk(x701)),Nonce(3),x701,i,x32,Nonce(3),x505,inv(h(x701,as,i,x32)),{inv(h(x701,as,i,x32))}_(pk(x701)),Session(4),x32,x505,Session(4),x609,x609,Session(4),1)
+% state_rRS(x28,0,h(x701,as,x28,x32),pk(x701),x32,x701,as,1)
+% state_ras(as,1,inv(h(x701,as,i,x32)),pk(x701),x32,i,x701,x307,x701,i,x32,x307,{inv(h(x701,as,i,x32))}_(pk(x701)),1)
+% witness(as,x701,pCasCRSScopeNonce,x701,i,x32,x307)
+% witness(x701,i,pRSCChallenge,x505)
