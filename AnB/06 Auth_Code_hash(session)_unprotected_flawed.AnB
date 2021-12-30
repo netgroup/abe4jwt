@@ -5,11 +5,11 @@
 # from https://www.imm.dtu.dk/~samo/
 # (last access on 13th October 2021)
 #
-# Same model as 02 Auth_Code_noPKCE_Nonce_OK.AnB, but Nonce is now calculated 
-# from Session. Note that no PKCE nor DPoP is used. The flow is not safe, 
-# if the Session parameter is leaked to the attacker.
+# Same as 01 Auth_Code_noPKCE_Nonce_unprotected_flawed.AnB but the
+# Nonce parameter a value directly computed from the initial 
+# Session parameter, so that a Resource Server may later check whether the token has 
+# been generated in the context of the current session, and not on another one.
 #
-
 
 
 Protocol: OIDC_AuthCodeFlow
@@ -31,26 +31,26 @@ Types: Agent    as, #Authorization Server (constant)
 
 Knowledge: 
            as: as,pk(as),inv(pk(as)),C,pw(as,C),code,resource,hash;
-           RS: RS,as,pk(as);
+           RS: RS,as,pk(as),nonce;
             C: C,RS,pk(as),pw(as,C),hash,nonce;
          where RS!=C, RS!=as, C!=as
 
 Actions:
 C->RS:Scope
-RS*->C:Scope,as,Session
+RS*->*C:Scope,as,Session
 
-[C]*->*as: RS,Scope,State,nonce(Session) #nonce is computed from Session
+[C]->as: RS,Scope,State,nonce(Session) #nonce is computed from Session
 as->[C]: State,code(Scope,State,nonce(Session)),Scope
 
-[C]*->*as:C,pw(as,C),code(Scope,State,nonce(Session))#,Verifier 
+[C]*->*as:C,pw(as,C),code(Scope,State,nonce(Session))
 as*->[C]:{resource(code(Scope,State,nonce(Session))),C,as,RS,nonce(Session)}inv(pk(as)),code(Scope,State,nonce(Session))  #this channel is no more confidential
 
 [C]*->*RS:{resource(code(Scope,State,nonce(Session))),C,as,RS,nonce(Session)}inv(pk(as)),Session
 RS*->*[C]:Data,Session
 
 Goals:
-RS authenticates C on RS,resource(code(Scope,State,nonce(Session))),C,as,Session
+C authenticates as on State,Scope,code(Scope,State,nonce(Session))
+as weakly authenticates C on C,pw(as,C),code(Scope,State,nonce(Session)),nonce(Session)
+RS authenticates C on RS,resource(code(Scope,State,nonce(Session))),C,as,nonce(Session),Session
 C authenticates RS on Data 
 Data secret between RS,C
-C authenticates as on State, Scope,code(Scope,State,nonce(Session))
-as weakly authenticates C on C,pw(as,C),code(Scope,State,nonce(Session))

@@ -5,10 +5,8 @@
 # from https://www.imm.dtu.dk/~samo/
 # (last access on 13th October 2021)
 #
-# Same model as in 00 Auth_Code_noPKCE_noNonce_Flawed.AnB except that 
-# Client’s initial parameters are now protected.
-# Code is leaked to the attacker who can later inject it into a second 
-# Client’s session. 
+# Same model as 00 Auth_Code_noPKCE_noNonce_flawed.AnB, except that Proof Key for Code
+# Exchange (PKCE) is introduced. Authorization request and reponse are unprotected.
 #
 
 Protocol: OIDC_AuthCodeFlow
@@ -29,7 +27,7 @@ Types: Agent    as, #Authorization Server (constant)
           Verifier; #Verifier used in PKCE
 
 Knowledge: 
-           as: as,pk(as),inv(pk(as)),C,pw(as,C),code,resource,hash;
+           as: as,pk(as),inv(pk(as)),C,pw(as,C),RS,code,resource,hash;
            RS: RS,as,pk(as);
             C: C,RS,pk(as),pw(as,C),hash;
          where RS!=C, RS!=as, C!=as
@@ -38,18 +36,18 @@ Actions:
 C->RS:Scope
 RS*->C:Scope,as,Session
 
-[C]*->*as: RS,Scope,State,Nonce#,hash(Verifier)
-as->[C]: State,code(Scope,State,Nonce),Scope
+[C]->as: RS,Scope,State,Nonce,hash(Verifier)
+as->[C]: State,code(Scope,State,Nonce,hash(Verifier)),Scope
 
-[C]*->*as:C,pw(as,C),code(Scope,State,Nonce)#,Verifier 
-as*->*[C]:{resource(code(Scope,State,Nonce)),C,as,RS}inv(pk(as)),code(Scope,State,Nonce)
+[C]*->*as:C,pw(as,C),code(Scope,State,Nonce,hash(Verifier)),Verifier
+as*->*[C]:{resource(code(Scope,State,Nonce,hash(Verifier))),C,as,RS}inv(pk(as)),Verifier#,code(Scope,State,Nonce,Verifier)
 
-[C]*->*RS:{resource(code(Scope,State,Nonce)),C,as,RS}inv(pk(as)),Session
+[C]*->*RS:{resource(code(Scope,State,Nonce,hash(Verifier))),C,as,RS}inv(pk(as)),Session
 RS*->*[C]:Data,Session
 
 Goals:
-RS authenticates C on RS,resource(code(Scope,State,Nonce)),C,as,Session
+C authenticates as on State,Scope,code(Scope,State,Nonce,hash(Verifier))
+as weakly authenticates C on C,pw(as,C),code(Scope,State,Nonce,hash(Verifier)),Verifier
+RS authenticates C on RS,resource(code(Scope,State,Nonce,hash(Verifier))),C,as,Session
 C authenticates RS on Data 
 Data secret between RS,C
-C authenticates as on State, Scope,code(Scope,State,Nonce)
-as weakly authenticates C on C,pw(as,C),code(Scope,State,Nonce)

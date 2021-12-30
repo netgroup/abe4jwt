@@ -1,0 +1,63 @@
+﻿Open-Source Fixedpoint Model-Checker version 2020
+Verified for 1 sessions
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 9963880 ms
+  parseTime 0 ms
+
+ATTACK TRACE:
+(x1302,1) -> i: Scope(1)
+(x1302,2) -> i: Scope(2)
+
+#attacker swaps Clients' sessions
+i -> (x906,1): Scope(2)
+i -> (x706,2): Scope(1)
+(x906,1) -> i: {|Scope(2),as,Session(3)|}_(secChCr(x906,x1302))
+(x706,2) -> i: {|Scope(1),as,Session(4)|}_(secChCr(x706,x1302))
+i -> (x1302,1): {|Scope(1),as,Session(4)|}_(secChCr(x706,x1302))
+i -> (x1302,2): {|Scope(2),as,Session(3)|}_(secChCr(x906,x1302))
+
+#C(1) asks for token, attacker returns a fake code (x1009)
+(x1302,1) -> i: pseudonym(x1302),{|x706,Scope(1),State(5),nonce(Session(4))|}_(secChCr(pseudonym(x1302),as))
+i -> (as,1): pseudonym(x1302),{|x706,Scope(1),State(5),nonce(Session(4))|}_(secChCr(pseudonym(x1302),as))
+(as,1) -> i: State(5),code(Scope(1),State(5),nonce(Session(4))),Scope(1)
+i -> (x1302,1): State(5),x1009,Scope(1)
+
+#C(2) asks for token using nonce(Session(3)), attacker returns C(1)'s code
+(x1302,2) -> i: pseudonym(x1302),{|x906,Scope(2),State(7),nonce(Session(3))|}_(secChCr(pseudonym(x1302),as))
+i -> (as,2): pseudonym(x1302),{|x906,Scope(2),State(7),nonce(Session(3))|}_(secChCr(pseudonym(x1302),as))
+(as,2) -> i: State(7),code(Scope(2),State(7),nonce(Session(3))),Scope(2)
+i -> (x1302,2): State(7),code(Scope(1),State(5),nonce(Session(4))),Scope(2)
+
+#C(1)'s code4token begins
+(x1302,1) -> i: pseudonym(x1302),{|x1302,pw(as,x1302),x1009|}_(secChCr(pseudonym(x1302),as))
+
+#C(2)'s code4token
+(x1302,2) -> i: pseudonym(x1302),{|x1302,pw(as,x1302),code(Scope(1),State(5),nonce(Session(4)))|}_(secChCr(pseudonym(x1302),as))
+i -> (as,1): pseudonym(x1302),{|x1302,pw(as,x1302),code(Scope(1),State(5),nonce(Session(4)))|}_(secChCr(pseudonym(x1302),as))
+(as,1) -> i: {{resource(code(Scope(1),State(5),nonce(Session(4)))),x1302,as,x706,nonce(Session(4))}_inv(pk(as)),code(Scope(1),State(5),nonce(Session(4)))}_inv(authChCr(as))
+
+#as believes she had a successful authentication with C(2) whereas the returned token is C(1)'s one. C(2) will give the RS a wrong token, if she does not care of the wrong Nonce (nonce(Session(4)) parameter contained in the token!
+
+
+
+% Reached State:
+% 
+% wrequest(as,x1302,pasCCpwasCcodeScopeStatenonceSessionnonceSession,x1302,pw(as,x1302),code(Scope(1),State(5),nonce(Session(4))),nonce(Session(4)),i)
+% state_ras(as,2,hash,resource,code,pw(as,x1302),x1302,inv(pk(as)),pk(as),nonce(Session(4)),State(5),Scope(1),x706,x706,Scope(1),State(5),nonce(Session(4)),pseudonym(x1302),State(5),code(Scope(1),State(5),nonce(Session(4))),Scope(1),code(Scope(1),State(5),nonce(Session(4))),x1302,pw(as,x1302),code(Scope(1),State(5),nonce(Session(4))),{resource(code(Scope(1),State(5),nonce(Session(4)))),x1302,as,x706,nonce(Session(4))}_inv(pk(as)),code(Scope(1),State(5),nonce(Session(4))),1)
+% state_rC(x1302,3,nonce,hash,pw(as,x1302),pk(as),x706,Scope(1),Session(4),as,Scope(1),as,Session(4),State(5),x706,Scope(1),State(5),nonce(Session(4)),nonce(Session(4)),x1009,State(5),x1009,Scope(1),x1302,pw(as,x1302),x1009,1)
+% state_rRS(x706,1,pk(as),as,Scope(1),Session(4),Scope(1),as,Session(4),2)
+% state_ras(as,1,hash,resource,code,pw(as,x34),x34,inv(pk(as)),pk(as),nonce(Session(3)),State(7),Scope(2),x906,x906,Scope(2),State(7),nonce(Session(3)),pseudonym(x1302),State(7),code(Scope(2),State(7),nonce(Session(3))),Scope(2),2)
+% state_rC(x1302,3,nonce,hash,pw(as,x1302),pk(as),x906,Scope(2),Session(3),as,Scope(2),as,Session(3),State(7),x906,Scope(2),State(7),nonce(Session(3)),nonce(Session(3)),code(Scope(1),State(5),nonce(Session(4))),State(7),code(Scope(1),State(5),nonce(Session(4))),Scope(2),x1302,pw(as,x1302),code(Scope(1),State(5),nonce(Session(4))),2)
+% state_rRS(x906,1,pk(as),as,Scope(2),Session(3),Scope(2),as,Session(3),1)
+% witness(as,x1302,pCasStateScopecodeScopeStatenonceSession,State(5),Scope(1),code(Scope(1),State(5),nonce(Session(4))))
+% witness(as,x34,pCasStateScopecodeScopeStatenonceSession,State(7),Scope(2),code(Scope(2),State(7),nonce(Session(3))))
+% witness(x1302,as,pasCCpwasCcodeScopeStatenonceSessionnonceSession,x1302,pw(as,x1302),x1009,nonce(Session(4)))
+% witness(x1302,as,pasCCpwasCcodeScopeStatenonceSessionnonceSession,x1302,pw(as,x1302),code(Scope(1),State(5),nonce(Session(4))),nonce(Session(3)))

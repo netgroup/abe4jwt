@@ -1,0 +1,40 @@
+﻿Open-Source Fixedpoint Model-Checker version 2020
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 148 ms
+  parseTime 4 ms
+  visitedNodes: 80 nodes
+  depth: 4 plies
+
+ATTACK TRACE:
+(x702,1) -> i: Scope(1)
+i -> (x702,1): {|Scope(1),as,x307|}_(secChCr(i,x702))
+
+#C asks for a code, but attacker injects her own parameters: Nonce (x409) and target destination (x406)
+(x702,1) -> i: pseudonym(x702),i,Scope(1),State(2),nonce(x307)
+i -> (as,1): pseudonym(x702),x406,Scope(1),State(2),x409
+(as,1) -> i: {|State(2),code(Scope(1),State(2),x409),Scope(1)|}_(secChCr(as,pseudonym(x702)))
+i -> (x702,1): {|State(2),code(Scope(1),State(2),x409),Scope(1)|}_(secChCr(as,pseudonym(x702)))
+
+#C's code4token
+(x702,1) -> i: pseudonym(x702),{|x702,pw(as,x702),code(Scope(1),State(2),x409)|}_(secChCr(pseudonym(x702),as))
+i -> (as,1): pseudonym(x702),{|x702,pw(as,x702),code(Scope(1),State(2),x409)|}_(secChCr(pseudonym(x702),as))
+(as,1) -> i: {{resource(code(Scope(1),State(2),x409)),x702,as,x406,x409}_inv(pk(as)),code(Scope(1),State(2),x409)}_inv(authChCr(as))
+
+#as believes she had a successful authentication with C whereas the returned token contains a wrong Nonce (x409) and target destination. C will give the RS a wrong token, if she does not care of these parameters! 
+
+% Reached State:
+% 
+% wrequest(as,x702,pasCCpwasCcodeScopeStatenonceSessionnonceSession,x702,pw(as,x702),code(Scope(1),State(2),x409),x409,i)
+% state_ras(as,2,hash,resource,code,pw(as,x702),x702,inv(pk(as)),pk(as),x409,State(2),Scope(1),x406,x406,Scope(1),State(2),x409,pseudonym(x702),State(2),code(Scope(1),State(2),x409),Scope(1),code(Scope(1),State(2),x409),x702,pw(as,x702),code(Scope(1),State(2),x409),{resource(code(Scope(1),State(2),x409)),x702,as,x406,x409}_inv(pk(as)),code(Scope(1),State(2),x409),1)
+% state_rC(x702,3,nonce,hash,pw(as,x702),pk(as),i,Scope(1),x307,as,Scope(1),as,x307,State(2),i,Scope(1),State(2),nonce(x307),nonce(x307),code(Scope(1),State(2),x409),State(2),code(Scope(1),State(2),x409),Scope(1),x702,pw(as,x702),code(Scope(1),State(2),x409),1)
+% state_rRS(x29,0,pk(as),as,1)
+% witness(as,x702,pCasStateScopecodeScopeStatenonceSession,State(2),Scope(1),code(Scope(1),State(2),x409))
+% witness(x702,as,pasCCpwasCcodeScopeStatenonceSessionnonceSession,x702,pw(as,x702),code(Scope(1),State(2),x409),nonce(x307))

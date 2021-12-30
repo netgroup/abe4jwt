@@ -5,7 +5,7 @@
 # from https://www.imm.dtu.dk/~samo/
 # (last access on 13th October 2021)
 #
-# Same model as in 08 Implicit_ABE+Challenge_Flawed.AnB, but including the Nonce
+# Same model as in 08 Implicit_ABE+Challenge_flawed.AnB, but including the Nonce
 # parameter in the returned ciphertext. The Client is able to check that the 
 # message is from the legitimate Authorization Server and not from an attacker. 
 # No attack was found till two simultaneous runs.

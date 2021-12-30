@@ -5,11 +5,11 @@
 # from https://www.imm.dtu.dk/~samo/
 # (last access on 13th October 2021)
 # 
-# Same as 04 Auth_Code_PKCE_Nonce_OK.AnB but using the Demonstrating 
+# Same as 04 Auth_Code_PKCE_noNonce_req_protected_OK.AnB but using the Demonstrating 
 # Proof-of-Possession (DPoP) protocol. Even if token may be leaked to an attacker 
 # (it is now transmitted under a no more confidential channel), no attack is 
 # found, as long as the presented signature is over sufficient parameters to make
-# it prevent reply attacks (the signature is over RS and Scope parameters).
+# it prevent reply attacks.
 #
 
 Protocol: OIDC_AuthCodeFlow
@@ -21,7 +21,8 @@ Types: Agent    as, #Authorization Server (constant)
                 pk, #as public key
           resource, #user authorized resource to be accessed
               code, #authorization code
-              hash; #PKCE trapdoor function
+              hash, #PKCE trapdoor function
+              ath;  #DPoP trapdoor function
       Number Scope, #OIDC AuthFlow parameter
              State, #OIDC AuthFlow parameter
              Nonce, #OIDC AuthFlow parameter
@@ -30,9 +31,9 @@ Types: Agent    as, #Authorization Server (constant)
           Verifier; #Verifier used in PKCE
 
 Knowledge: 
-           as: as,pk(as),inv(pk(as)),C,pw(as,C),code,resource,hash;
-           RS: RS,as,pk(as);
-            C: C,RS,pk(as),pw(as,C),hash,pk(C),inv(pk(C));
+           as: as,pk(as),inv(pk(as)),C,pw(as,C),RS,code,resource,hash,pk;
+           RS: RS,as,pk(as),ath;
+            C: C,RS,pk(as),pw(as,C),hash,pk(C),inv(pk(C)),ath;
          where RS!=C, RS!=as, C!=as
 
 Actions:
@@ -40,18 +41,17 @@ C->RS:Scope
 RS*->C:Scope,as,Session
 
 [C]*->*as: RS,Scope,State,Nonce,hash(Verifier)
-as->[C]: State,code(Scope,State,Nonce),Scope
+as->[C]: State,code(Scope,State,Nonce,hash(Verifier)),Scope
 
-[C]*->*as:C,pw(as,C),code(Scope,State,Nonce),Verifier
-	,pk(C),{RS,Scope,pk(C)}inv(pk(C)) #DPoP proof
-as*->[C]:{resource(code(Scope,State,Nonce)),C,as,RS,Nonce,pk(C)}inv(pk(as)),code(Scope,State,Nonce) #this channel is no more confidential
+[C]*->*as:C,pw(as,C),code(Scope,State,Nonce,hash(Verifier)),Verifier,{pk(C)}inv(pk(C)) #DPoP proof
+as*->[C]:{resource(code(Scope,State,Nonce,hash(Verifier))),C,as,RS,Nonce,pk(C)}inv(pk(as)),code(Scope,State,Nonce,hash(Verifier)) #this channel is no more confidential
 
-[C]*->*RS:{resource(code(Scope,State,Nonce)),C,as,RS,Nonce,pk(C)}inv(pk(as)),Session,{RS,Scope,pk(C)}inv(pk(C))
+[C]*->*RS:{resource(code(Scope,State,Nonce,hash(Verifier))),C,as,RS,Nonce,pk(C)}inv(pk(as)),Session,{ath(resource(code(Scope,State,Nonce,hash(Verifier))),C,as,RS,Nonce,pk(C)),RS,Scope}inv(pk(C))
 RS*->*[C]:Data,Session
 
 Goals:
-RS authenticates C on RS,resource(code(Scope,State,Nonce)),C,as,Session,{RS,Scope,pk(C)}inv(pk(C))
+C authenticates as on State,Scope,code(Scope,State,Nonce,hash(Verifier))
+as weakly authenticates C on C,pw(as,C),code(Scope,State,Nonce,hash(Verifier)),Verifier
+RS authenticates C on RS,resource(code(Scope,State,Nonce,hash(Verifier))),C,as,Session
 C authenticates RS on Data 
 Data secret between RS,C
-C authenticates as on State, Scope,code(Scope,State,Nonce)
-as weakly authenticates C on C,pw(as,C),code(Scope,State,Nonce)

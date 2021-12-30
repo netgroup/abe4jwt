@@ -1,0 +1,40 @@
+﻿Open-Source Fixedpoint Model-Checker version 2020
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 116 ms
+  parseTime 4 ms
+  visitedNodes: 23 nodes
+  depth: 4 plies
+
+ATTACK TRACE:
+(x702,1) -> i: Scope(1)
+i -> (x702,1): {Scope(1),as,x307}_inv(authChCr(i))
+
+#C asks for a code, but attacker injects her own Nonce (x409), Scope (x407) and State (x408)
+(x702,1) -> i: pseudonym(x702),i,Scope(1),State(2),Nonce(2)
+i -> (as,1): pseudonym(x702),x26,x407,x408,x409
+(as,1) -> i: x408,code(x407,x408,x409),x407
+i -> (x702,1): State(2),code(x407,x408,x409),Scope(1)
+
+#C's code4token using wrong code(x407,x408,x409)
+(x702,1) -> i: pseudonym(x702),{|x702,pw(as,x702),code(x407,x408,x409)|}_(secChCr(pseudonym(x702),as))
+i -> (as,1): pseudonym(x702),{|x702,pw(as,x702),code(x407,x408,x409)|}_(secChCr(pseudonym(x702),as))
+(as,1) -> i: {|{resource(code(x407,x408,x409)),x702,as,x26,x409}_inv(pk(as)),code(x407,x408,x409)|}_(secChCr(as,pseudonym(x702)))
+
+#as believes she had a successful authentication with C whereas the returned token contains wrong Nonce and Scope. C will give the RS a wrong token, if she does not care of these parameters! 
+
+% Reached State:
+% 
+% wrequest(as,x702,pasCCpwasCcodeScopeStateNonceNonce,x702,pw(as,x702),code(x407,x408,x409),x409,i)
+% state_ras(as,2,hash,resource,code,x26,pw(as,x702),x702,inv(pk(as)),pk(as),x409,x408,x407,x26,x407,x408,x409,pseudonym(x702),x408,code(x407,x408,x409),x407,code(x407,x408,x409),x702,pw(as,x702),code(x407,x408,x409),{resource(code(x407,x408,x409)),x702,as,x26,x409}_inv(pk(as)),code(x407,x408,x409),1)
+% state_rC(x702,3,hash,pw(as,x702),pk(as),i,Scope(1),x307,as,Scope(1),as,x307,State(2),Nonce(2),i,Scope(1),State(2),Nonce(2),code(x407,x408,x409),State(2),code(x407,x408,x409),Scope(1),x702,pw(as,x702),code(x407,x408,x409),1)
+% state_rRS(x30,0,pk(as),as,1)
+% witness(as,x702,pCasStateScopecodeScopeStateNonce,x408,x407,code(x407,x408,x409))
+% witness(x702,as,pasCCpwasCcodeScopeStateNonceNonce,x702,pw(as,x702),code(x407,x408,x409),Nonce(2))

@@ -1,0 +1,55 @@
+﻿Open-Source Fixedpoint Model-Checker version 2020
+Verified for 1 sessions
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 3024 ms
+  parseTime 0 ms
+  visitedNodes: 910 nodes
+  depth: 7 plies
+
+ATTACK TRACE:
+(x1002,1) -> i: Scope(1)
+(x1002,2) -> i: Scope(2)
+i -> (x1002,1): {Scope(1),as,x407}_inv(authChCr(i))
+i -> (x1002,2): {Scope(2),as,x607}_inv(authChCr(i))
+
+#C(1) asks for a code using Nonce(3)
+(x1002,1) -> i: pseudonym(x1002),{|i,Scope(1),State(3),Nonce(3)|}_(secChCr(pseudonym(x1002),as))
+i -> (as,1): pseudonym(x1002),{|i,Scope(1),State(3),Nonce(3)|}_(secChCr(pseudonym(x1002),as))
+(as,1) -> i: State(3),code(Scope(1),State(3),Nonce(3)),Scope(1)
+
+#C(2) asks for a code using Nonce(5)
+(x1002,2) -> i: pseudonym(x1002),{|i,Scope(2),State(5),Nonce(5)|}_(secChCr(pseudonym(x1002),as))
+i -> (as,2): pseudonym(x1002),{|i,Scope(2),State(5),Nonce(5)|}_(secChCr(pseudonym(x1002),as))
+(as,2) -> i: State(5),code(Scope(2),State(5),Nonce(5)),Scope(2)
+
+#attacker injects C(1) the code obtained by C(2) 
+i -> (x1002,1): State(3),code(Scope(2),State(5),Nonce(5)),Scope(1)
+
+#C(1)'s code4token using C(2)'s code
+(x1002,1) -> i: pseudonym(x1002),{|x1002,pw(as,x1002),code(Scope(2),State(5),Nonce(5))|}_(secChCr(pseudonym(x1002),as))
+i -> (as,2): pseudonym(x1002),{|x1002,pw(as,x1002),code(Scope(2),State(5),Nonce(5))|}_(secChCr(pseudonym(x1002),as))
+(as,2) -> i: {|{resource(code(Scope(2),State(5),Nonce(5))),x1002,as,i,Nonce(5)}_inv(pk(as)),code(Scope(2),State(5),Nonce(5))|}_(secChCr(as,pseudonym(x1002)))
+
+#as believes she had a successful authentication with C(1) whereas the returned token is C(2)'s one. C(1) will give the RS a wrong token, if she does not care of the wrong Nonce parameter contained in the token!
+
+
+% Reached State:
+% 
+% wrequest(as,x1002,pasCCpwasCcodeScopeStateNonceNonce,x1002,pw(as,x1002),code(Scope(2),State(5),Nonce(5)),Nonce(5),i)
+% state_ras(as,2,hash,resource,code,i,pw(as,x1002),x1002,inv(pk(as)),pk(as),Nonce(5),State(5),Scope(2),i,Scope(2),State(5),Nonce(5),pseudonym(x1002),State(5),code(Scope(2),State(5),Nonce(5)),Scope(2),code(Scope(2),State(5),Nonce(5)),x1002,pw(as,x1002),code(Scope(2),State(5),Nonce(5)),{resource(code(Scope(2),State(5),Nonce(5))),x1002,as,i,Nonce(5)}_inv(pk(as)),code(Scope(2),State(5),Nonce(5)),2)
+% state_rC(x1002,2,hash,pw(as,x1002),pk(as),i,Scope(2),x607,as,Scope(2),as,x607,State(5),Nonce(5),i,Scope(2),State(5),Nonce(5),2)
+% state_rRS(x30,0,pk(as),as,1)
+% state_ras(as,1,hash,resource,code,i,pw(as,x28),x28,inv(pk(as)),pk(as),Nonce(3),State(3),Scope(1),i,Scope(1),State(3),Nonce(3),pseudonym(x1002),State(3),code(Scope(1),State(3),Nonce(3)),Scope(1),1)
+% state_rC(x1002,3,hash,pw(as,x1002),pk(as),i,Scope(1),x407,as,Scope(1),as,x407,State(3),Nonce(3),i,Scope(1),State(3),Nonce(3),code(Scope(2),State(5),Nonce(5)),State(3),code(Scope(2),State(5),Nonce(5)),Scope(1),x1002,pw(as,x1002),code(Scope(2),State(5),Nonce(5)),1)
+% state_rRS(x36,0,pk(as),as,2)
+% witness(as,x28,pCasStateScopecodeScopeStateNonce,State(3),Scope(1),code(Scope(1),State(3),Nonce(3)))
+% witness(as,x1002,pCasStateScopecodeScopeStateNonce,State(5),Scope(2),code(Scope(2),State(5),Nonce(5)))
+% witness(x1002,as,pasCCpwasCcodeScopeStateNonceNonce,x1002,pw(as,x1002),code(Scope(2),State(5),Nonce(5)),Nonce(3))

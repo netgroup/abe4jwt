@@ -1,0 +1,50 @@
+﻿Open-Source Fixedpoint Model-Checker version 2020
+INPUT:
+   oidc.anb
+SUMMARY:
+  ATTACK_FOUND
+GOAL:
+  weak_auth
+BACKEND:
+  Open-Source Fixedpoint Model-Checker version 2020
+STATISTICS:
+  TIME 160 ms
+  parseTime 4 ms
+  visitedNodes: 39 nodes
+  depth: 6 plies
+
+ATTACK TRACE:
+(x901,1) -> i: Scope(1)
+i -> (x901,1): {Scope(1),as,x307}_inv(authChCr(i))
+
+#C asks for a code, but attacker injects her own parameters: Scope (x407), State (x408), Nonce (x409).
+(x901,1) -> i: pseudonym(x901),i,Scope(1),State(2),Nonce(2),hash(Verifier(2))
+i -> (as,1): pseudonym(x901),i,x407,x408,x409,hash(Verifier(2))
+(as,1) -> i: x408,code(x407,x408,x409,hash(Verifier(2))),x407
+i -> (x901,1): State(2),code(x407,x408,x409,hash(Verifier(2))),Scope(1)
+
+#C's code4token
+(x901,1) -> i: pseudonym(x901),{|x901,pw(as,x901),code(x407,x408,x409,hash(Verifier(2))),Verifier(2)|}_(secChCr(pseudonym(x901),as))
+i -> (as,1): pseudonym(x901),{|x901,pw(as,x901),code(x407,x408,x409,hash(Verifier(2))),Verifier(2)|}_(secChCr(pseudonym(x901),as))
+(as,1) -> i: {|{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),Verifier(2)|}_(secChCr(as,pseudonym(x901)))
+i -> (x901,1): {|{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),Verifier(2)|}_(secChCr(as,pseudonym(x901)))
+
+#C uses the wrong token
+(x901,1) -> i: pseudonym(x901),{|{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),x307|}_(secChCr(pseudonym(x901),i))
+i -> (x901,1): {|x813,x307|}_(secChCr(i,pseudonym(x901)))
+
+
+% Reached State:
+% 
+% request(x901,as,pCasStateScopecodeScopeStateNoncehashVerifier,State(2),Scope(1),code(x407,x408,x409,hash(Verifier(2))),1)
+% request(x901,i,pCRSData,x813,1)
+% secrets(x813,secrecyset(x901,1,pData),i)
+% contains(secrecyset(x901,1,pData),i)
+% contains(secrecyset(x901,1,pData),x901)
+% state_rC(x901,5,hash,pw(as,x901),pk(as),i,Scope(1),x307,as,Scope(1),as,x307,State(2),Nonce(2),Verifier(2),i,Scope(1),State(2),Nonce(2),hash(Verifier(2)),hash(Verifier(2)),code(x407,x408,x409,hash(Verifier(2))),State(2),code(x407,x408,x409,hash(Verifier(2))),Scope(1),x901,pw(as,x901),code(x407,x408,x409,hash(Verifier(2))),Verifier(2),resource(code(x407,x408,x409,hash(Verifier(2)))),{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),Verifier(2),{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),x307,x813,x813,x307,1)
+% state_rRS(x29,0,pk(as),as,1)
+% state_ras(as,2,hash,resource,code,pw(as,x901),x901,inv(pk(as)),pk(as),hash(Verifier(2)),x409,x408,x407,i,i,x407,x408,x409,hash(Verifier(2)),pseudonym(x901),x408,code(x407,x408,x409,hash(Verifier(2))),x407,code(x407,x408,x409,hash(Verifier(2))),Verifier(2),x901,pw(as,x901),code(x407,x408,x409,hash(Verifier(2))),Verifier(2),{resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,i}_inv(pk(as)),Verifier(2),1)
+% witness(as,x901,pCasStateScopecodeScopeStateNoncehashVerifier,x408,x407,code(x407,x408,x409,hash(Verifier(2))))
+% witness(x901,as,pasCCpwasCcodeScopeStateNoncehashVerifierVerifier,x901,pw(as,x901),code(x407,x408,x409,hash(Verifier(2))),Verifier(2))
+% wrequest(as,x901,pasCCpwasCcodeScopeStateNoncehashVerifierVerifier,x901,pw(as,x901),code(x407,x408,x409,hash(Verifier(2))),Verifier(2),i)
+% witness(x901,i,pRSCRSresourcecodeScopeStateNoncehashVerifierCasSession,i,resource(code(x407,x408,x409,hash(Verifier(2)))),x901,as,x307)
