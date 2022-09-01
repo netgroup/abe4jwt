@@ -16,11 +16,13 @@
 
     <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="${httpPort}" httpsPort="${httpsPort}"/>
 
+    <!-- added <httpDispatcher> to quirky redirect to the app when invoking root context. Alternative: do not use dropins, but server.xml. See https://stackoverflow.com/questions/39749109/modify-default-context-root-in-websphere-liberty-error-cwwkz0013e -->
+    <!-- application type="war" location="${project.build.directory}/${project.build.finalName}.war" context-root="/"/-->
+    <httpDispatcher enableWelcomePage="false" appOrContextRootMissingMessage='&lt;script&gt;document.location.href="/client/";&lt;/script&gt;'></httpDispatcher>
+    
+    
     <!-- applicationManager autoExpand="true"/-->
     <!-- applicationMonitor updateTrigger="mbean"/-->
 	<!-- applicationMonitor updateTrigger="polled" pollingRate="2s"/-->
     <!--  dropins="dropins" dropinsEnabled="true"/-->
-                        
-    <!-- application type="war" location="${project.build.directory}/${project.build.finalName}.war" context-root="/"/-->
- 
 </server>

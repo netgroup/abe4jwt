@@ -111,14 +111,14 @@
 					<h1>Why does Attribute-Based Encryption concern?</h1>
 					<p>
 				        Despite its complex math formulation, the concept of ABE is very simple: decryption only happens if the receiver's key embeds 
-				        a policy 'matching' particular attributes the sender has used to encrypt the plaintext. A Resource Server may thus challenge a Client by encrypting a secret and 
-				        ask the Client to present it when invoking functions. Only Clients that legitimately got the correct key-policy can decrypt the secret, thus invoke the function. 
-				        The key may embed different attributes (identity information, actions to perform, expiration, etc.) combined together in a policy.
+				        attributes matching a policy the sender has used to encrypt the plaintext. A Resource Server may thus challenge a Client by encrypting a secret and 
+				        ask the Client to present it when accessing the service. Only Clients that legitimately got the correct key can decrypt the secret. 
+				        The key may embed different attributes (identity information, request context, expiration, etc.) that can be selectively disclosed (depending on the encryption policy).
 		        	<p>
 		        </div>
 				<div class="col-sm-6 in-order-2 sm-6-content wow animated fadeInRight" data-wow-delay="0.22s">
 					    <h1>Leave your comment?</h1>
-					    <p>Well, you can do that. Comments are intended to provide useful feedback to this work. Please do not post offensive comments.</p>
+					    <p>Well, you can do that! Comments are intended to provide useful feedback to this work. Please do not post offensive comments.</p>
 					    <p class="grid-desc"><input class="col-sm-6" type="text" id="title" placeholder="Title"></p>
 					    <p class="grid-desc"><textarea class="col-sm-6" id="text" placeholder="Your comment" ></textarea></p>
 						<button class="btn btn-md features-btn-first" data-wow-delay="1.25s" id="cancel" onclick="$('#title').val('');$('#text').val('')">Cancel</button>
